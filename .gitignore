@@ -1,12 +1,33 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environments
 .venv/
 venv/
+
+# Environment Variables
 .env
 
-# Database
+# Databases
 *.db
+
+# Python Packaging
+*.egg-info/
+.eggs/
+
+# Test Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type Checking
+.mypy_cache/
+
+# Linting
+.ruff_cache/
 
 # Node
 node_modules/
