@@ -3,10 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.project import ProjectCreate, ProjectResponse
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.api.dependencies import get_current_user
 from app.services.project_service import ProjectService
-from app.repositories.project_repository import ProjectRepository
 
 router = APIRouter(
     prefix="/projects",
@@ -15,8 +14,7 @@ router = APIRouter(
 
 
 def get_project_service(db: Session = Depends(get_db)) -> ProjectService:
-    repository = ProjectRepository(db)
-    return ProjectService(repository)
+    return ProjectService(db)
 
 
 @router.post(
@@ -66,3 +64,19 @@ def delete_project(
 ):
     service.delete_project(project_id, current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.put(
+    "/{project_id}",
+    response_model=ProjectResponse,
+)
+def update_project(
+    project_id: int,
+    data: ProjectUpdate,
+    current_user: User = Depends(get_current_user),
+    service: ProjectService = Depends(get_project_service),
+):
+    return service.update_project(
+        project_id=project_id,
+        data=data,
+        current_user=current_user,
+    )

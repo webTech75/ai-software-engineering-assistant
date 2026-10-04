@@ -3,13 +3,13 @@ from fastapi import HTTPException, status
 from app.models.project import Project
 from app.models.user import User
 from app.repositories.project_repository import ProjectRepository
-from app.schemas.project import ProjectCreate
-
+from app.schemas.project import ProjectCreate, ProjectUpdate
+from sqlalchemy.orm import Session
 
 class ProjectService:
 
-    def __init__(self, repository: ProjectRepository):
-        self.repository = repository
+    def __init__(self, db: Session):
+        self.repository = ProjectRepository(db)
 
     def create_project(
         self,
@@ -68,3 +68,26 @@ class ProjectService:
         )
 
         self.repository.delete(project)
+
+    def update_project(
+    self,
+    project_id: int,
+    data: ProjectUpdate,
+    current_user: User,
+) -> Project:
+
+        project = self.repository.get_by_id(project_id)
+
+        if project is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found.",
+            )
+
+        if project.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not allowed to update this project.",
+            )
+
+        return self.repository.update(project, data)
