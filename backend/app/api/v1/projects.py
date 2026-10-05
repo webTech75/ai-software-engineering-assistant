@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response, status, UploadFile, File
 from sqlalchemy.orm import Session
 
+from app.utils.file_storage import save_uploaded_file, extract_zip
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
+from app.schemas.project_scan import ProjectScanResponse
 from app.api.dependencies import get_current_user
 from app.services.project_service import ProjectService
 
@@ -65,6 +67,7 @@ def delete_project(
     service.delete_project(project_id, current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+
 @router.put(
     "/{project_id}",
     response_model=ProjectResponse,
@@ -79,4 +82,48 @@ def update_project(
         project_id=project_id,
         data=data,
         current_user=current_user,
+    )
+
+
+@router.post(
+    "/{project_id}/upload",
+)
+def upload_project_file(
+    project_id: int,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    service: ProjectService = Depends(get_project_service),
+):
+    # Verify project exists and belongs to the user
+    project = service.get_project(project_id, current_user)
+
+    file_path = save_uploaded_file(project.id, file)
+
+    if file.filename.lower().endswith(".zip"):
+        extracted_path = extract_zip(project.id, file_path)
+
+        return {
+            "message": "ZIP uploaded and extracted successfully.",
+            "project_directory": extracted_path,
+        }
+
+    return {
+        "message": "File uploaded successfully.",
+        "filename": file.filename,
+        "path": file_path,
+    }
+
+
+@router.get(
+    "/{project_id}/scan",
+    response_model=ProjectScanResponse,
+)
+def scan_project_endpoint(
+    project_id: int,
+    current_user: User = Depends(get_current_user),
+    service: ProjectService = Depends(get_project_service),
+):
+    return service.scan_project(
+        project_id,
+        current_user,
     )

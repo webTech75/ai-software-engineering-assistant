@@ -29,6 +29,10 @@ htmlcov/
 # Linting
 .ruff_cache/
 
+# Runtime uploads
+uploads/
+backend/uploads/
+
 # Node
 node_modules/
 

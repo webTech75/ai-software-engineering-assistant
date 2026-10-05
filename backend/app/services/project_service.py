@@ -1,3 +1,5 @@
+from json import scanner
+
 from fastapi import HTTPException, status
 
 from app.models.project import Project
@@ -5,6 +7,8 @@ from app.models.user import User
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.project import ProjectCreate, ProjectUpdate
 from sqlalchemy.orm import Session
+from app.analysis.scanner import ProjectScanner
+from app.utils.file_storage import get_project_directory
 
 class ProjectService:
 
@@ -70,11 +74,11 @@ class ProjectService:
         self.repository.delete(project)
 
     def update_project(
-    self,
-    project_id: int,
-    data: ProjectUpdate,
-    current_user: User,
-) -> Project:
+        self,
+        project_id: int,
+        data: ProjectUpdate,
+        current_user: User,
+    ) -> Project:
 
         project = self.repository.get_by_id(project_id)
 
@@ -91,3 +95,16 @@ class ProjectService:
             )
 
         return self.repository.update(project, data)
+
+    def scan_project(
+        self,
+        project_id: int,
+        current_user,
+    ):
+        project = self.get_project(project_id, current_user)
+
+        project_dir = get_project_directory(project.id)
+
+        scanner = ProjectScanner()
+
+        return scanner.scan(str(project_dir))
