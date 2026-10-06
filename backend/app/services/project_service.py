@@ -1,4 +1,26 @@
-from json import scanner
+"""
+===============================================================================
+File: project_service.py
+Path: app/services/project_service.py
+
+Description:
+    Contains the business logic for project management.
+
+Responsibilities:
+    - Create projects.
+    - Retrieve projects.
+    - Update project information.
+    - Delete projects.
+    - Coordinate repository operations.
+
+Notes:
+    - Business rules belong here.
+    - Database access is delegated to the repository layer.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
 
 from fastapi import HTTPException, status
 
@@ -9,6 +31,7 @@ from app.schemas.project import ProjectCreate, ProjectUpdate
 from sqlalchemy.orm import Session
 from app.analysis.scanner import ProjectScanner
 from app.utils.file_storage import get_project_directory
+from app.schemas import project
 
 class ProjectService:
 
@@ -108,3 +131,16 @@ class ProjectService:
         scanner = ProjectScanner()
 
         return scanner.scan(str(project_dir))
+    
+
+    def update_project_directory(
+        self,
+        project: Project,
+        directory: str,
+    ):
+        project.project_directory = directory
+        self.repository.commit()
+
+
+    def save(self, project: Project) -> Project:
+        return self.repository.save(project)

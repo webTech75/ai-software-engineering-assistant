@@ -1,6 +1,7 @@
 from app.analysis.statistics import StatisticsAnalyzer
 from app.analysis.structure import StructureAnalyzer
 from app.analysis.technology import TechnologyAnalyzer
+#from app.analysis.dependencies import DependencyAnalyzer
 from app.analysis.base import BaseAnalyzer
 
 
@@ -14,6 +15,7 @@ class ProjectScanner:
         StatisticsAnalyzer(),
         TechnologyAnalyzer(),
         StructureAnalyzer(),
+       # DependencyAnalyzer(),
     ]
 
     def scan(self, project_directory: str) -> dict:

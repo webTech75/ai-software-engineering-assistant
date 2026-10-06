@@ -24,7 +24,23 @@ class StructureResponse(BaseModel):
     files: list[str]
 
 
+# class PackageResponse(BaseModel):
+#     name: str
+#     version: str | None = None
+
+
+# class LanguageDependencyResponse(BaseModel):
+#     manager: str
+#     packages: list[PackageResponse]
+
+
+# class DependencyResponse(BaseModel):
+#     python: LanguageDependencyResponse | None = None
+#     javascript: LanguageDependencyResponse | None = None
+
+
 class ProjectScanResponse(BaseModel):
     statistics: StatisticsResponse
     technology: TechnologyResponse
     structure: StructureResponse
+    # dependencies: DependencyResponse

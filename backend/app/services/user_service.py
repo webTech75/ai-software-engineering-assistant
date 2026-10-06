@@ -1,4 +1,27 @@
-# Contains business logic.
+"""
+===============================================================================
+File: user_service.py
+Path: app/services/user_service.py
+
+Description:
+    Contains the business logic for user management.
+
+Responsibilities:
+    - Register new users.
+    - Authenticate users.
+    - Retrieve user information.
+    - Coordinate repository operations.
+
+Notes:
+    - Business rules belong in this layer.
+    - Database access is delegated to the repository layer.
+    - Password hashing and verification should be handled through the
+      application's security utilities.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session

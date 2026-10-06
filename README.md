@@ -1,192 +1,92 @@
-<h1 align="center">🤖 AI Software Engineering Assistant</h1>
+# 🤖 AI Software Engineering Assistant
 
 <p align="center">
-Build • Analyze • Improve • Document Software with AI
+An AI-powered platform for understanding, analyzing, and managing software projects.
 </p>
 
 <p align="center">
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1000&center=true&vCenter=true&width=900&lines=AI+Software+Engineering+Assistant;FastAPI+Backend;Clean+Architecture;JWT+Authentication;Project+Management;AI+Code+Analysis+Coming+Soon!" />
+
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python\&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi\&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite\&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active%20Development-success)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 </p>
 
----
-
 <p align="center">
-
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
-
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)
-
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red)
-
-![Alembic](https://img.shields.io/badge/Alembic-Migrations-orange)
-
-![JWT](https://img.shields.io/badge/JWT-Authentication-success)
-
-![SQLite](https://img.shields.io/badge/SQLite-Database-blue)
-
-![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
-
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&duration=3500&pause=900&center=true&vCenter=true&width=900&lines=AI+Software+Engineering+Assistant;Analyze+Software+Projects;Generate+Documentation;Explain+Architecture;AI-Powered+Software+Engineering" alt="Typing Animation">
 </p>
 
 ---
 
-# 📖 Overview
+## Overview
 
-AI Software Engineering Assistant is a modern backend application built with **FastAPI** following clean software architecture principles.
+AI Software Engineering Assistant is a modern backend platform that combines **FastAPI** with **Large Language Models (LLMs)** to help developers understand, analyze, document, and manage software projects.
 
-The goal of this project is to provide developers with an intelligent assistant capable of:
-
-- Managing software projects
-- Uploading source code
-- Understanding software architecture
-- Analyzing code using AI
-- Detecting bugs
-- Suggesting improvements
-- Generating documentation
-- Assisting developers throughout the software development lifecycle
+Using AI function calling and a secure tool system, the assistant can inspect project files, execute development tasks, and answer questions using the actual project rather than general model knowledge alone.
 
 ---
 
-# ✨ Current Features
+## ✨ Features
 
-## 🔐 Authentication
-
-- ✅ User Registration
-- ✅ User Login
-- ✅ JWT Authentication
-- ✅ Password Hashing (bcrypt)
-- ✅ Protected API Endpoints
-
----
-
-## 📂 Project Management
-
-- ✅ Create Project
-- ✅ Get All Projects
-- ✅ Get Project by ID
-- ✅ Update Project
-- ✅ Delete Project
+* 🔐 JWT Authentication
+* 📁 Project Management
+* 🤖 AI Chat
+* 🛠️ Tool-Based AI Architecture
+* 📄 Project File Management
+* 🏗️ Clean Layered Architecture
+* 📚 Comprehensive Documentation
 
 ---
 
-## 🗄 Database
+## 🏛️ Architecture
 
-- ✅ SQLAlchemy ORM
-- ✅ Alembic Migrations
-- ✅ SQLite (Development)
-
----
-
-## 🏗 Software Architecture
-
-- ✅ Repository Pattern
-- ✅ Service Layer
-- ✅ Dependency Injection
-- ✅ REST API
-- ✅ Clean Architecture
-
----
-
-# 🚀 Technology Stack
-
-| Backend | Database | Security | Tools |
-|----------|----------|----------|-------|
-| FastAPI | SQLite | JWT | Git |
-| SQLAlchemy | Alembic | Passlib | GitHub |
-| Python 3.12 | ORM | OAuth2 | Swagger UI |
-
----
-
-# 🏛 Architecture
-
-```
-                Frontend (Coming Soon)
+```text
+                React Frontend (Planned)
                          │
                          ▼
                  FastAPI Backend
-        ┌────────────────┼────────────────┐
-        ▼                ▼                ▼
- Authentication     Project API      AI Engine
-        ▼                ▼                ▼
-             SQLAlchemy ORM
-                    │
-                    ▼
-                 SQLite
+                         │
+          ┌──────────────┴──────────────┐
+          ▼                             ▼
+     REST API                     AI Agent
+          │                             │
+          ▼                             ▼
+     Services                    Tool Registry
+          │                             │
+          ▼                             ▼
+   Repositories                 Project Tools
+          │
+          ▼
+      SQLAlchemy ORM
+          │
+          ▼
+         SQLite
 ```
 
----
-
-# 📂 Project Structure
-
-```
-backend/
-│
-├── alembic/
-│
-├── app/
-│   ├── api/
-│   ├── core/
-│   ├── db/
-│   ├── models/
-│   ├── repositories/
-│   ├── schemas/
-│   ├── services/
-│   └── main.py
-│
-├── requirements.txt
-└── .env.example
-```
+A detailed explanation is available in **`docs/architecture.md`**.
 
 ---
 
-# 📡 API Endpoints
+## 🚀 Quick Start
 
-## 👤 Users
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | /users/register | Register a new user |
-| POST | /users/login | Login and receive JWT |
-
----
-
-## 📁 Projects
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | /projects | Create Project |
-| GET | /projects | Get All Projects |
-| GET | /projects/{id} | Get Project by ID |
-| PUT | /projects/{id} | Update Project |
-| DELETE | /projects/{id} | Delete Project |
-
----
-
-# 🚀 Getting Started
-
-## Clone Repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/webTech75/ai-software-engineering-assistant.git
-```
 
----
-
-## Navigate to Backend
-
-```bash
 cd ai-software-engineering-assistant/backend
 ```
 
----
-
-## Create Virtual Environment
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Linux / macOS
+Linux/macOS
 
 ```bash
 source .venv/bin/activate
@@ -198,134 +98,126 @@ Windows
 .venv\Scripts\activate
 ```
 
----
-
-## Install Dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## Configure Environment Variables
-
-Create a `.env` file using the provided `.env.example`.
-
----
-
-## Run Database Migrations
+Run database migrations:
 
 ```bash
 alembic upgrade head
 ```
 
----
-
-## Start the Server
+Start the development server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
----
-
-## Swagger API
+Open Swagger UI:
 
 ```
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
 ```
 
 ---
 
-# 🚧 Roadmap
+## 📚 Documentation
 
-## ✅ Phase 1
+Detailed documentation is available in the **`docs/`** directory.
 
-- [x] User Authentication
-- [x] JWT Authentication
-- [x] Project CRUD
-- [x] SQLAlchemy ORM
-- [x] Alembic Migrations
-
----
-
-## 🚀 Phase 2
-
-- [ ] File Upload
-- [ ] ZIP Extraction
-- [ ] Source Code Storage
-- [ ] Project File Management
+| Document          | Description         |
+| ----------------- | ------------------- |
+| `architecture.md` | System architecture |
+| `ai-agent.md`     | AI agent workflow   |
+| `tools.md`        | AI tool system      |
+| `api.md`          | REST API reference  |
+| `development.md`  | Development guide   |
+| `roadmap.md`      | Future plans        |
 
 ---
 
-## 🤖 Phase 3
+## 🚧 Current Status
 
-- [ ] AI Code Analysis
-- [ ] Explain Source Code
-- [ ] Bug Detection
-- [ ] Refactoring Suggestions
-- [ ] Documentation Generator
-- [ ] UML Diagram Generation
+### ✅ Completed
 
----
+* User authentication
+* Project CRUD
+* AI chat endpoint
+* Tool registry
+* Project file tools
+* Modular backend architecture
 
-## 🌐 Phase 4
+### 🚀 In Progress
 
-- [ ] React Frontend
-- [ ] Docker
-- [ ] PostgreSQL
-- [ ] Automated Testing
-- [ ] CI/CD
-- [ ] Cloud Deployment
+* Project upload
+* Project indexing
+* Project search
+* Modern React frontend
 
----
-
-# 🎯 Learning Objectives
-
-This project demonstrates practical experience with:
-
-- FastAPI
-- SQLAlchemy
-- Alembic
-- JWT Authentication
-- OAuth2
-- Clean Architecture
-- Repository Pattern
-- Service Layer
-- REST APIs
-- AI Integration
-- Modern Backend Development
+See **`docs/roadmap.md`** for the complete development roadmap.
 
 ---
 
-# 🌟 Future Vision
+## 🗂️ Project Structure
 
-The long-term vision is to transform this application into a complete AI Software Engineering Assistant capable of helping developers understand, improve, and maintain software projects using Large Language Models.
+```text
+backend/
 
-Future capabilities include:
-
-- 📂 Upload an entire software project
-- 🤖 Chat with your codebase
-- 🐞 Detect bugs automatically
-- 📖 Generate technical documentation
-- 🏛 Explain software architecture
-- 📊 Generate UML diagrams
-- ✨ Recommend best practices
-- 🚀 Improve code quality
+├── alembic/
+├── app/
+│   ├── ai/
+│   ├── agent/
+│   ├── api/
+│   ├── core/
+│   ├── db/
+│   ├── models/
+│   ├── repositories/
+│   ├── schemas/
+│   ├── services/
+│   └── main.py
+│
+├── docs/
+│
+├── requirements.txt
+│
+└── README.md
+```
 
 ---
 
-# 👨‍💻 Author
+## 🌟 Vision
 
-Developed by **Amr Elhabbal**
+The long-term goal is to build an AI-powered software engineering platform capable of:
+
+* Understanding complete codebases
+* Conversational project exploration
+* AI-assisted documentation
+* Code review and bug detection
+* Refactoring assistance
+* UML generation
+* Git integration
+* Intelligent project search
+* Developer workflow automation
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and feedback are welcome.
+
+Please review the documentation in the **`docs/`** directory before contributing.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ---
 
 <p align="center">
-
-⭐ If you like this project, consider giving it a star!
-
-🚀 More exciting AI features coming soon.
-
+Built with ❤️ using Python, FastAPI, and Large Language Models.
 </p>

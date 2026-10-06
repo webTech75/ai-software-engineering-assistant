@@ -25,6 +25,11 @@ class Project(Base):
         nullable=True,
     )
 
+    project_directory: Mapped[str] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
     owner_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False,

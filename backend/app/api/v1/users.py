@@ -1,4 +1,25 @@
-# Defines HTTP endpoints.
+"""
+===============================================================================
+File: users.py
+Path: app/api/v1/users.py
+
+Description:
+    Provides user authentication and account management endpoints.
+
+Responsibilities:
+    - Register new users.
+    - Authenticate existing users.
+    - Return JWT access tokens.
+    - Retrieve authenticated user information.
+
+Notes:
+    - Passwords are never stored in plain text.
+    - JWT authentication secures protected endpoints.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm

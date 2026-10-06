@@ -1,4 +1,25 @@
-# Reads/writes to the database.
+"""
+===============================================================================
+File: user_repository.py
+Path: app/repositories/user_repository.py
+
+Description:
+    Provides database access operations for User entities.
+
+Responsibilities:
+    - Create users.
+    - Retrieve users.
+    - Update users.
+    - Delete users.
+
+Notes:
+    - Contains persistence logic only.
+    - Business logic belongs in the service layer.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
 
 from sqlalchemy.orm import Session
 
