@@ -2,9 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
     <title>AI Software Engineering Assistant</title>
+    <script>
+      (function () {
+        try {
+          var ids = ["light", "dark", "oled", "forest", "ocean"];
+          var t = localStorage.getItem("theme");
+          document.documentElement.setAttribute("data-theme", ids.indexOf(t) > -1 ? t : "light");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

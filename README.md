@@ -20,7 +20,7 @@ An AI-powered platform for understanding, analyzing, and managing software proje
 </p>
 
 ---
-
+![alt text](frontend/src/assets/ai-swe.png)
 ## Overview
 
 AI Software Engineering Assistant is a modern backend platform that combines **FastAPI** with **Large Language Models (LLMs)** to help developers understand, analyze, document, and manage software projects.

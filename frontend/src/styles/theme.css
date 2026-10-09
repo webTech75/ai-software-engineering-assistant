@@ -1,0 +1,121 @@
+/* ---------- Theme tokens ---------- */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f4f5f7;
+  --text: #16181d;
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+
+  --secondary: var(--surface);
+  --secondary-foreground: var(--text);
+
+  --muted: var(--surface);
+  --muted-foreground: var(--muted);
+
+  --accent-foreground: var(--on-accent);
+
+  --input: var(--border);
+  --ring: var(--accent);
+  --muted: #5b6270;
+  --border: #d9dce2;
+  --accent: #2f5bea;
+  --on-accent: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --surface: #181b21;
+  --text: #e8eaee;
+  --muted: #9aa1ae;
+  --border: #2b303a;
+  --accent: #7b9cff;
+  --on-accent: #0f1115;
+}
+
+:root[data-theme="oled"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --text: #f2f2f2;
+  --muted: #8a8a8a;
+  --border: #1c1c1c;
+  --accent: #7b9cff;
+  --on-accent: #000000;
+}
+
+:root[data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #0e1a14;
+  --surface: #15261d;
+  --text: #e3efe7;
+  --muted: #8fae9b;
+  --border: #24402f;
+  --accent: #5fd08a;
+  --on-accent: #0e1a14;
+}
+
+:root[data-theme="ocean"] {
+  color-scheme: light;
+  --bg: #eef6fb;
+  --surface: #dcecf6;
+  --text: #0c2a3d;
+  --muted: #476a80;
+  --border: #b7d3e4;
+  --accent: #0a7bbf;
+  --on-accent: #ffffff;
+}
+
+/* ---------- Base styles using the tokens ---------- */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+a { color: var(--accent); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body { transition: none; }
+}
