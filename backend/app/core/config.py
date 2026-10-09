@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     LLM_API_KEY: str
     LLM_MODEL: str
     LLM_BASE_URL: str
+    ALLOWED_ORIGINS: list[str] = []
 
     model_config = SettingsConfigDict(
         env_file=".env",

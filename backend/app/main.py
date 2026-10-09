@@ -30,10 +30,24 @@ from app.core.config import settings
 from app.models.user import User
 from app.api.v1.projects import router as projects_router
 from app.api.v1.chat import router as chat_router
+from fastapi.middleware.cors import CORSMiddleware
+from app.db.database import Base, engine
+from app.models.project import Project
+from app.models.chat_message import ChatMessage
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.app_name,
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(users_router, prefix="/api/v1")

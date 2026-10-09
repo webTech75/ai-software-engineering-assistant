@@ -44,13 +44,13 @@ class ProjectRepository:
 
         return project   
 
-    def commit(self):
-        self.db.commit()
-        self.db.refresh(self.project)
+    # def commit(self):
+    #     self.db.commit()
+    #     self.db.refresh(self.project)
 
 
-    def save(self, project: Project) -> Project:
-        self.db.add(project)
-        self.db.commit()
-        self.db.refresh(project)
-        return project
+    # def save(self, project: Project) -> Project:
+    #     self.db.add(project)
+    #     self.db.commit()
+    #     self.db.refresh(project)
+    #     return project
