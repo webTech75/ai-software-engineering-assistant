@@ -25,7 +25,7 @@ api.interceptors.response.use(
   },
 
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response?.status === 401 && !error.config.url.includes('/login')){
       logout();
 
       window.location.href = "/login";

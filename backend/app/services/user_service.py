@@ -23,19 +23,19 @@ Author:
 ===============================================================================
 """
 from fastapi import HTTPException, status
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+import secrets
+from datetime import datetime, timedelta, timezone
 
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
 from app.core.security import hash_password
 from app.core.security import create_access_token, verify_password
-from app.schemas.auth import LoginRequest, TokenResponse
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
+from app.schemas.auth import TokenResponse
+from app.models.password_reset_token import PasswordResetToken
+from app.repositories.password_reset_token_repository import (
+    PasswordResetTokenRepository,
 )
 
 
@@ -43,16 +43,19 @@ class UserService:
 
     def __init__(self, db: Session):
         self.repository = UserRepository(db)
-
+        self.password_reset_repository = PasswordResetTokenRepository(db)
     def create_user(self, data: UserCreate) -> User:
 
-        if self.repository.get_by_email(data.email):
+        username = data.username.strip().lower()
+        email = data.email.strip().lower()
+
+        if self.repository.get_by_email(email):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already exists."
             )
 
-        if self.repository.get_by_username(data.username):
+        if self.repository.get_by_username(username):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username already exists."
@@ -61,8 +64,8 @@ class UserService:
         password_hash = hash_password(data.password)
 
         user = User(
-            username=data.username,
-            email=data.email,
+            username=username,
+            email=email,
             password_hash=password_hash,
         )
 
@@ -89,3 +92,50 @@ class UserService:
         return TokenResponse(
             access_token=token
         )
+
+    def forgot_password(self, email: str):
+
+        email = email.strip().lower()
+
+        user = self.repository.get_by_email(email)
+
+        if not user:
+            return
+
+        token = secrets.token_urlsafe(32)
+
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=30)
+
+        password_reset = PasswordResetToken(
+            user_id=user.id,
+            token=token,
+            expires_at=expires_at,
+        )
+
+        self.password_reset_repository.create(password_reset)
+
+        print("\n==============================")
+        print("PASSWORD RESET LINK")
+        print(f"http://localhost:5173/reset-password?token={token}")
+        print("==============================\n")
+
+    def reset_password(self, token: str, password: str):
+
+        password_reset = self.password_reset_repository.get_by_token(token)
+
+        if not password_reset:
+            raise ValueError("Invalid or expired reset link.")
+
+        if password_reset.used:
+            raise ValueError("This reset link has already been used.")
+
+        if password_reset.expires_at < datetime.now():
+            raise ValueError("This reset link has expired.")
+
+        user = password_reset.user
+
+        user.password_hash = hash_password(password)
+
+        password_reset.used = True
+
+        self.password_reset_repository.update()

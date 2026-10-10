@@ -26,8 +26,11 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app.db.database import Base
+
 from app.models.user import User
 from app.models.project import Project
+from app.models.chat_message import ChatMessage
+from app.models.password_reset_token import PasswordResetToken
 
 target_metadata = Base.metadata
 

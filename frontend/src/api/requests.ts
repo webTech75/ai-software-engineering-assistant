@@ -10,6 +10,35 @@ export async function loginRequest(username: string, password: string) {
   return data;
 }
 
+export async function forgotPasswordRequest(email: string) {
+  const { data } = await api.post("/users/forgot-password", {
+      email,
+  });
+
+  return data;
+}
+
+export async function resetPasswordRequest(
+  token: string,
+  password: string
+) {
+  const { data } = await api.post("/users/reset-password", {
+    token,
+    password,
+  });
+
+  return data;
+}
+
+export async function registerRequest(user: {
+    username: string;
+    email: string;
+    password: string;
+  }) {
+    const { data } = await api.post("/users/register", user);
+    return data;
+  }
+
 export async function getCurrentUserRequest() {
   const { data } = await api.get("/users/me");
   return data;

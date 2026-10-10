@@ -27,15 +27,22 @@ from fastapi import FastAPI
 from app.api.v1.users import router as users_router
 from app.core.config import settings
 # import the User model to ensure it is registered with SQLAlchemy
-from app.models.user import User
+
 from app.api.v1.projects import router as projects_router
 from app.api.v1.chat import router as chat_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import Base, engine
+from app.models.user import User
 from app.models.project import Project
 from app.models.chat_message import ChatMessage
+from app.models.password_reset_token import PasswordResetToken
 
-Base.metadata.create_all(bind=engine)
+# commented below line since it's better Alembic creates database tables,
+# Base.metadata.create_all(bind=engine)
+# 1. Generate a migration:
+# alembic revision --autogenerate -m "description"
+# 2. Apply it:
+# alembic upgrade head
 
 app = FastAPI(
     title=settings.app_name,

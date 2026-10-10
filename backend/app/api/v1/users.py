@@ -20,12 +20,12 @@ Author:
     Amr Elhabbal
 ===============================================================================
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.db.database import get_db
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, ForgotPasswordRequest, ResetPasswordRequest
 from app.services.user_service import UserService
 from app.schemas.auth import LoginRequest, TokenResponse
 from app.api.dependencies import get_current_user
@@ -38,6 +38,7 @@ router = APIRouter(
 )
 
 @router.post("/register")
+
 def register(
     user: UserCreate,
     db: Session = Depends(get_db),
@@ -67,7 +68,41 @@ def login(
         password=form_data.password,
     )
 
+@router.post("/forgot-password")
+
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    service = UserService(db)
+    service.forgot_password(request.email)
+    return {
+        "message": "If an account exists, a password reset email should be sent shortly."
+    }
+
+@router.post("/reset-password")
+
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    service = UserService(db)
+    try: 
+        service.reset_password(
+            token=request.token,
+            password=request.password,
+        )
+        return {
+            "message": "Your password has been reset successfully."
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
 @router.get("/me")
+
 def get_me(
     current_user: User = Depends(get_current_user),
 ):

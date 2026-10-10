@@ -32,6 +32,7 @@ class UserRepository:
         self.db = db
 
     def get_by_email(self, email: str) -> User | None:
+        email = email.strip().lower()
         return (
             self.db.query(User)
             .filter(User.email == email)
@@ -39,6 +40,7 @@ class UserRepository:
         )
 
     def get_by_username(self, username: str) -> User | None:
+        username = username.strip().lower()
         return (
             self.db.query(User)
             .filter(User.username == username)
