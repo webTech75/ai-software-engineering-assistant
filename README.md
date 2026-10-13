@@ -2,6 +2,8 @@
 
 <p align="center">
 An AI-powered platform for understanding, analyzing, and managing software projects.
+<p align="center">
+Analyze software projects the way an experienced software engineer would.
 </p>
 
 <p align="center">

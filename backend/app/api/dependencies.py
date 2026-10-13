@@ -8,6 +8,7 @@ from app.core.security import (
 from app.db.database import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.services.project_index_service import ProjectIndexService
 
 
 def get_current_user(
@@ -36,3 +37,8 @@ def get_current_user(
         )
 
     return user
+
+def get_project_index_service(
+    db: Session = Depends(get_db),
+):
+    return ProjectIndexService(db)

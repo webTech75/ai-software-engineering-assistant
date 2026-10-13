@@ -103,4 +103,22 @@ Do not repeatedly inspect the same file unless it has changed.
 If a tool returns enough information to answer the user's question, stop using tools and respond.
 
 Avoid reading the entire project unless the user explicitly asks for a full project analysis.
+
+Project Analysis
+
+When the user asks for:
+- project review
+- analyze my code
+- find bugs
+- improve architecture
+- review implementation
+
+Use the analyze_project tool.
+
+After receiving the analysis:
+- summarize important findings
+- prioritize by severity
+- explain recommended improvements
+- identify missing implementations
+- do not expose raw analyzer output unless requested
 """

@@ -21,7 +21,7 @@ Author:
     Amr Elhabbal
 ===============================================================================
 """
-from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Query, HTTPException
 from sqlalchemy.orm import Session
 
 from app.utils.file_storage import save_uploaded_file, extract_zip
@@ -31,9 +31,15 @@ from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.schemas.project_scan import ProjectScanResponse
 from app.api.dependencies import get_current_user
 from app.services.project_service import ProjectService
+from app.services.symbol_index_service import SymbolIndexService
+from app.services.file_index_service import FileIndexService
 from app.agent.tools.list_files import ListFilesTool
 from app.agent.tools.read_file import ReadFileTool
 from app.agent.tools.search_text import SearchTextTool
+from app.models.project import Project
+from app.services.project_index_service import ProjectIndexService
+from app.api.dependencies import get_project_index_service
+
 
 router = APIRouter(
     prefix="/projects",
@@ -117,6 +123,7 @@ def upload_project_file(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     service: ProjectService = Depends(get_project_service),
+    index_service: ProjectIndexService = Depends(get_project_index_service),
 ):
     # Verify project exists and belongs to the user
     project = service.get_project(project_id, current_user)
@@ -126,13 +133,18 @@ def upload_project_file(
     if file.filename.lower().endswith(".zip"):
         extracted_path = extract_zip(project.id, file_path)
 
-        # Save project directory
         project.project_directory = extracted_path
         service.save(project)
 
+        result = index_service.reindex_project(
+            project_id=project.id,
+            project_directory=extracted_path,
+        )
+
         return {
-            "message": "ZIP uploaded and extracted successfully.",
+            "message": "ZIP uploaded and indexed successfully.",
             "project_directory": extracted_path,
+            **result,
         }
 
     return {
@@ -202,3 +214,132 @@ def search_project(
     tool = SearchTextTool()
 
     return tool.execute(project, query)
+
+
+# @router.post("/{project_id}/index-symbols")
+# def index_project_symbols(
+#     project_id: int,
+#     db: Session = Depends(get_db),
+# ):
+
+#     project = (
+#         db.query(Project)
+#         .filter(Project.id == project_id)
+#         .first()
+#     )
+
+#     if not project:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Project not found"
+#         )
+
+
+#     service = SymbolIndexService(db)
+
+#     symbols = service.index_project(
+#         project_id=project.id,
+#         project_directory=project.project_directory,
+#     )
+
+
+#     return {
+#         "message": "Project symbols indexed successfully",
+#         "symbols_indexed": len(symbols),
+#     }
+
+# @router.post("/{project_id}/index-files")
+# def index_project_files(
+#     project_id: int,
+#     db: Session = Depends(get_db),
+# ):
+#     project = db.query(Project).filter(
+#         Project.id == project_id
+#     ).first()
+
+#     if not project:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Project not found"
+#         )
+
+#     service = FileIndexService(db)
+
+#     files = service.index_project(
+#         project.id,
+#         project.project_directory
+#     )
+
+#     return {
+#         "message": "Project files indexed successfully",
+#         "files_indexed": len(files)
+#     }
+
+@router.delete("/{project_id}/cleanup-index")
+def cleanup_project_index(
+    project_id: int,
+    db: Session = Depends(get_db),
+):
+    project = (
+        db.query(Project)
+        .filter(Project.id == project_id)
+        .first()
+    )
+
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+    service = ProjectIndexService(db)
+
+    service.cleanup(project_id)
+
+    return {
+        "message": "Project index cleaned successfully",
+        "project_id": project_id,
+    }
+
+@router.post("/{project_id}/reindex")
+def reindex_project(
+    project_id: int,
+    db: Session = Depends(get_db),
+):
+    project = (
+        db.query(Project)
+        .filter(Project.id == project_id)
+        .first()
+    )
+
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+    service = ProjectIndexService(db)
+
+    result = service.reindex_project(
+        project_id=project.id,
+        project_directory=project.project_directory,
+    )
+
+    return {
+        "message": "Project reindexed successfully",
+        **result,
+    }
+
+@router.get("/{project_id}/index-status")
+def get_project_index_status(
+    project_id: int,
+    current_user: User = Depends(get_current_user),
+    project_service: ProjectService = Depends(get_project_service),
+    index_service: ProjectIndexService = Depends(get_project_index_service),
+):
+    project_service.get_project(
+        project_id,
+        current_user,
+    )
+
+    return index_service.get_index_status(project_id)

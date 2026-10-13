@@ -31,7 +31,11 @@ from app.core.config import settings
 # SQLAlchemy engine used to communicate with the database.
 engine = create_engine(
     settings.database_url,
-    echo=True
+    echo=True,
+    connect_args={
+        "check_same_thread": False,
+        "timeout": 30,
+    },
 )
 
 # Factory used to create independent database sessions.

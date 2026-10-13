@@ -7,30 +7,48 @@ Description:
     Reads the contents of a project file.
 
 Responsibilities:
-    - Validate the requested path.
-    - Prevent path traversal attacks.
-    - Read the file safely.
-    - Return the file contents to the AI.
+    - Receive a requested file path.
+    - Delegate file access to FileManager.
+    - Return file contents to the AI.
 
 Notes:
+    - File security rules are handled by FileManager.
     - Only files inside the project directory can be read.
-    - Used before answering questions about a file or modifying it.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
-from pathlib import Path
+
 
 from app.agent.tools.base import BaseTool
-from app.models.project import Project
+from app.file_system.file_manager import FileManager
+
 
 
 class ReadFileTool(BaseTool):
 
+
+    def __init__(
+        self,
+        file_manager: FileManager | None = None,
+    ):
+        """
+        Initialize tool with filesystem manager.
+        """
+
+        self.file_manager = (
+            file_manager
+            or FileManager()
+        )
+
+
+
     @property
     def name(self) -> str:
         return "read_file"
+
+
 
     @property
     def description(self) -> str:
@@ -38,6 +56,8 @@ class ReadFileTool(BaseTool):
             "Read the contents of a file. Use this tool "
             "before answering questions about a file or before modifying it."
         )
+
+
 
     @property
     def schema(self):
@@ -51,7 +71,9 @@ class ReadFileTool(BaseTool):
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Relative path of the file to read."
+                            "description": (
+                                "Relative path of the file to read."
+                            )
                         }
                     },
                     "required": ["path"],
@@ -60,27 +82,19 @@ class ReadFileTool(BaseTool):
             },
         }
 
+
+
     def execute(
         self,
-        project: Project,
+        project_directory: str,
         path: str,
+        **kwargs
     ) -> str:
+        """
+        Read file contents through FileManager.
+        """
 
-        root = Path(project.project_directory).resolve()
-
-        file_path = (root / path).resolve()
-
-       # Prevent path traversal
-        if not str(file_path).startswith(str(root)):
-            raise ValueError("Invalid file path.")
-
-        if not file_path.exists():
-            raise FileNotFoundError(path)
-
-        if not file_path.is_file():
-            raise ValueError(f"'{path}' is not a file.")
-
-        return file_path.read_text(
-            encoding="utf-8",
-            errors="ignore",
+        return self.file_manager.read_file(
+            project_directory,
+            path,
         )

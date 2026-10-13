@@ -4,135 +4,110 @@ File: service.py
 Path: app/agent/service.py
 
 Description:
-    Implements the AI Agent responsible for orchestrating conversations
-    between the user, the Large Language Model (LLM), and the project's
-    tools.
+    Service layer responsible for connecting the API layer
+    with the AI Agent.
 
 Responsibilities:
-    - Build the initial conversation.
-    - Send requests to the LLM.
-    - Handle LLM tool calls.
-    - Execute project tools safely.
-    - Feed tool results back to the LLM.
-    - Return the final assistant response.
+    - Receive project requests from the API.
+    - Pass the database Project object to the agent.
+    - Initialize agent components.
 
-Workflow:
+Important:
+    The Project object is the source of truth.
 
-    User
-      │
-      ▼
- Build Messages
-      │
-      ▼
- Send to LLM
-      │
-      ▼
- Tool Calls?
- ├───────────────┐
- │ No            │ Yes
- ▼               ▼
-Return      Execute Tool
-                 │
-                 ▼
-         Append Tool Result
-                 │
-                 ▼
-          Continue Conversation
+    The filesystem path:
+        project.project_directory
 
-Dependencies:
-    - OpenAI Chat Completions API
-    - ToolRegistry
-    - SYSTEM_PROMPT
-    - Application Settings
+    is only used by tools that access files.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
 
-import json
+import logging
 
-from app.ai.llm.client import client
-from app.agent.tool_registry import ToolRegistry
-from app.agent.prompts.system_prompt import SYSTEM_PROMPT
-from app.core.config import settings
+from sqlalchemy.orm import Session
+
+from app.agent.agent import Agent
+from app.agent.planner import Planner
+from app.agent.executor import Executor
+from app.agent.context_builder import ContextBuilder
+from app.agent.response_builder import ResponseBuilder
+
+
+logger = logging.getLogger(__name__)
 
 
 class AgentService:
-    def __init__(self):
-        self.tool_registry = ToolRegistry() 
+    """
+    Application service responsible for running
+    the AI software engineering agent.
+    """
 
-    def ask(self, project, message: str) -> str:
-        messages = [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": message,
-            },
-        ]
 
-        while True:
-            response = client.chat.completions.create(
-                model=settings.LLM_MODEL,
-                messages=messages,
-                tools=self.tool_registry.schemas,
-            )
+    def __init__(
+        self,
+        db: Session,
+    ):
+        """
+        Initialize the agent pipeline.
 
-            assistant_message = response.choices[0].message
+        The agent needs:
+            - Planner
+            - Executor
+            - Context Builder
+            - Response Builder
+        """
 
-            # Save the assistant message so the model can continue the conversation.
-            messages.append(assistant_message)
+        self.agent = Agent(
 
-            # If the model answered normally, we're done.
-            if assistant_message.content:
-                return assistant_message.content
+            # Creates the execution plan
+            planner=Planner(),
 
-            # If no tools were requested, stop.
-            if not assistant_message.tool_calls:
-                return "The assistant did not return a response."
 
-            # Execute every requested tool.
-            for tool_call in assistant_message.tool_calls:
-                tool_name = tool_call.function.name
-                arguments = json.loads(tool_call.function.arguments or "{}")
+            # Executes tools from the plan
+            executor=Executor(),
 
-                try:
-                    tool = self.tool_registry.get(tool_name)
 
-                    if tool is None:
-                        result = f"Unknown tool: {tool_name}"
-                    else:
-                        result = tool.execute(
-                            project,
-                            **arguments,
-                        )
+            # Loads project information from database
+            #
+            # Receives a DB session because it needs:
+            #   - ProjectFile
+            #   - ProjectSymbol
+            #
+            context_builder=ContextBuilder(db),
 
-                except FileNotFoundError as e:
-                    result = f"File not found: {e}"
 
-                except PermissionError:
-                    result = "Permission denied."
+            # Converts execution results
+            # into the final assistant response
+            response_builder=ResponseBuilder(),
+        )
 
-                except Exception as e:
-                    result = f"Tool error: {e}"
 
-                tool_output = json.dumps(result)
 
-                MAX_TOOL_OUTPUT = 50_000
+    def ask(
+        self,
+        project,
+        message: str,
+    ) -> str:
+        """
+        Send a request to the AI agent.
 
-                if len(tool_output) > MAX_TOOL_OUTPUT:
-                    tool_output = (
-                        tool_output[:MAX_TOOL_OUTPUT]
-                        + "\n\n...output truncated..."
-                    )
+        IMPORTANT:
 
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": json.dumps(result),
-                    }
-                )
+        We pass the whole Project object.
+
+        because the agent needs database information:
+
+            project.id
+            project.name
+            project.description
+            project.project_directory
+
+        """
+
+        return self.agent.run(
+            project,
+            message,
+        )

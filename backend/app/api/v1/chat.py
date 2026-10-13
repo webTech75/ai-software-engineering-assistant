@@ -55,6 +55,7 @@ def get_chat_service(
 def chat(
     project_id: int,
     request: ChatRequest,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     project_service: ProjectService = Depends(get_project_service),
     chat_service: ChatService = Depends(get_chat_service),
@@ -73,7 +74,7 @@ def chat(
     )
 
     # Ask the AI.
-    agent = AgentService()
+    agent = AgentService(db)
 
     answer = agent.ask(
         project,

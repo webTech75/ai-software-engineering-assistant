@@ -64,29 +64,32 @@ Author:
     Amr Elhabbal
 ===============================================================================
 """
-
 from abc import ABC, abstractmethod
-
-from app.models.project import Project
 
 
 class BaseTool(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:
+    def name(self):
         pass
+
 
     @property
     @abstractmethod
-    def description(self) -> str:
+    def description(self):
         pass
 
-    @property
-    @abstractmethod
-    def schema(self) -> dict:
-        pass
 
     @abstractmethod
-    def execute(self, project: Project):
+    def schema(self):
+        pass
+
+
+    @abstractmethod
+    def execute(
+        self,
+        project_directory: str,
+        **kwargs
+    ):
         pass

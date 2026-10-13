@@ -33,6 +33,7 @@ Author:
     Amr Elhabbal
 ===============================================================================
 """
+from app.file_system.file_manager import FileManager
 
 from app.agent.tools.list_files import ListFilesTool
 from app.agent.tools.read_file import ReadFileTool
@@ -40,26 +41,30 @@ from app.agent.tools.search_text import SearchTextTool
 from app.agent.tools.write_file import WriteFileTool
 from app.agent.tools.edit_file import EditFileTool
 from app.agent.tools.delete_file import DeleteFileTool
-
+from app.agent.tools.analyze_project import AnalyzeProjectTool
 
 class ToolRegistry:
     """Stores and provides access to all agent tools."""
 
     def __init__(self):
+
+        file_manager = FileManager()
+
         tools = [
             ListFilesTool(),
-            ReadFileTool(),
-            SearchTextTool(),
-            WriteFileTool(),
-            EditFileTool(),
-            DeleteFileTool(),
+            ReadFileTool(file_manager),
+            SearchTextTool(file_manager),
+            WriteFileTool(file_manager),
+            EditFileTool(file_manager),
+            DeleteFileTool(file_manager),
+            AnalyzeProjectTool(),
         ]
 
         self._tools = {
             tool.name: tool
             for tool in tools
         }
-
+        print(self._tools.keys())
     def get(self, name: str):
         return self._tools.get(name)
 

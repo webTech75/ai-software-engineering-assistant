@@ -35,6 +35,8 @@ from app.db.database import Base, engine
 from app.models.user import User
 from app.models.project import Project
 from app.models.chat_message import ChatMessage
+from app.models.project_file import ProjectFile
+from app.models.project_symbol import ProjectSymbol
 from app.models.password_reset_token import PasswordResetToken
 
 # commented below line since it's better Alembic creates database tables,

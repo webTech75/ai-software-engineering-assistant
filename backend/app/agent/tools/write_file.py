@@ -4,30 +4,37 @@ File: write_file.py
 Path: app/agent/tools/write_file.py
 
 Description:
-    Creates a new file or updates an existing file within the project.
+    Creates or updates a project file.
 
 Responsibilities:
-    - Validate the destination path.
-    - Prevent path traversal attacks.
-    - Create parent directories when necessary.
-    - Write content using UTF-8 encoding.
+    - Receive file write requests.
+    - Delegate filesystem operations to FileManager.
+    - Return write result.
 
 Notes:
-    - Existing files are overwritten.
-    - Parent directories are created automatically.
+    - File security rules are handled by FileManager.
     - Only files inside the project directory can be modified.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
-from pathlib import Path
 
 from app.agent.tools.base import BaseTool
-from app.models.project import Project
+from app.file_system.file_manager import FileManager
 
 
 class WriteFileTool(BaseTool):
+
+    def __init__(
+        self,
+        file_manager: FileManager | None = None,
+    ):
+        self.file_manager = (
+            file_manager
+            or FileManager()
+        )
+
     @property
     def name(self) -> str:
         return "write_file"
@@ -35,9 +42,8 @@ class WriteFileTool(BaseTool):
     @property
     def description(self) -> str:
         return (
-            "Creates a new file or replaces the contents of an existing file "
-            "inside the user's project. Use this tool whenever the user requests "
-            "to create, generate, write, update, edit, or modify a file."
+            "Creates a new file or replaces the contents "
+            "of an existing file inside the project."
         )
 
     @property
@@ -45,26 +51,35 @@ class WriteFileTool(BaseTool):
         return {
             "type": "function",
             "function": {
-                "name": "write_file",
-                "description": "Create or overwrite a file in the project.",
+                "name": self.name,
+                "description": self.description,
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Relative path of the file to write."
+                            "description": (
+                                "Relative path of the file to write."
+                            ),
                         },
                         "content": {
                             "type": "string",
-                            "description": "Complete file contents."
+                            "description": (
+                                "Complete file contents."
+                            ),
                         },
                         "overwrite": {
                             "type": "boolean",
-                            "description": "Whether to overwrite an existing file.",
-                            "default": False
-                        }
+                            "description": (
+                                "Whether to overwrite an existing file."
+                            ),
+                            "default": False,
+                        },
                     },
-                    "required": ["path", "content"],
+                    "required": [
+                        "path",
+                        "content",
+                    ],
                     "additionalProperties": False,
                 },
             },
@@ -72,33 +87,19 @@ class WriteFileTool(BaseTool):
 
     def execute(
         self,
-        project: Project,
+        project_directory: str,
         path: str,
         content: str,
         overwrite: bool = False,
-    ) -> str:
+        **kwargs,
+    ):
+        """
+        Write file through FileManager.
+        """
 
-        root = Path(project.project_directory).resolve()
-        file_path = (root / path).resolve()
-
-        # Prevent path traversal
-        if not str(file_path).startswith(str(root)):
-            raise ValueError("Invalid file path.")
-
-        if file_path.exists() and not overwrite:
-            return {
-                "status": "already_exists",
-                "path": path,
-            }
-
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-
-        file_path.write_text(
+        return self.file_manager.write_file(
+            project_directory,
+            path,
             content,
-            encoding="utf-8",
+            overwrite,
         )
-
-        return {
-            "status": "created",
-            "path": path,
-        }

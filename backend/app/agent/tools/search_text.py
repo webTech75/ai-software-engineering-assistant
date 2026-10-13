@@ -1,10 +1,16 @@
 from pathlib import Path
 
 from app.agent.tools.base import BaseTool
-from app.models.project import Project
+from app.file_system.file_manager import FileManager
 
 
 class SearchTextTool(BaseTool):
+
+    def __init__(
+        self,
+        file_manager: FileManager,
+    ):
+        self.file_manager = file_manager
 
     @property
     def name(self) -> str:
@@ -40,39 +46,12 @@ class SearchTextTool(BaseTool):
 
     def execute(
         self,
-        project: Project,
+        project_directory: str,
         query: str,
+        **kwargs
     ) -> list[dict]:
 
-        root = Path(project.project_directory).resolve()
-
-        results = []
-
-        for file in root.rglob("*"):
-
-            if not file.is_file():
-                continue
-
-            try:
-                lines = file.read_text(
-                    encoding="utf-8",
-                    errors="ignore",
-                ).splitlines()
-
-                for number, line in enumerate(lines, start=1):
-
-                    if query.lower() in line.lower():
-
-                        results.append(
-                            {
-                                "file": str(file.relative_to(root)),
-                                "line": number,
-                                "text": line.strip(),
-                            }
-                        )
-
-            except Exception:
-                # Skip binary or unreadable files
-                continue
-
-        return results
+        return self.file_manager.search_text(
+            project_directory=project_directory,
+            query=query,
+        )

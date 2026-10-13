@@ -1,22 +1,26 @@
-from pathlib import Path
-
 from app.agent.tools.base import BaseTool
-from app.models.project import Project
+from app.file_system.file_manager import FileManager
 
 
 class EditFileTool(BaseTool):
+
+    def __init__(self, file_manager: FileManager):
+        self.file_manager = file_manager
+
 
     @property
     def name(self):
         return "edit_file"
 
+
     @property
     def description(self):
         return (
-            "Replace the complete contents of an existing file. "
-            "Use this after reading a file and generating the updated version. "
+            "Replace text inside an existing file. "
+            "Use this tool when modifying an existing project file. "
             "Do not use this tool to create new files."
         )
+
 
     @property
     def schema(self):
@@ -28,48 +32,46 @@ class EditFileTool(BaseTool):
                 "parameters": {
                     "type": "object",
                     "properties": {
+
                         "path": {
                             "type": "string",
                             "description": "Relative file path."
                         },
-                        "content": {
+
+                        "old_text": {
                             "type": "string",
-                            "description": "The complete updated file contents."
+                            "description": "Existing text to replace."
+                        },
+
+                        "new_text": {
+                            "type": "string",
+                            "description": "Replacement text."
                         }
+
                     },
                     "required": [
                         "path",
-                        "content"
+                        "old_text",
+                        "new_text"
                     ],
                     "additionalProperties": False
                 }
             }
         }
 
+
     def execute(
         self,
-        project: Project,
+        project_directory: str,
         path: str,
-        content: str,
+        old_text: str,
+        new_text: str,
+        **kwargs
     ):
-        root = Path(project.project_directory).resolve()
-        file_path = (root / path).resolve()
 
-        if not str(file_path).startswith(str(root)):
-            raise ValueError("Invalid file path.")
-
-        if not file_path.exists():
-            return {
-                "status": "not_found",
-                "path": path,
-            }
-
-        file_path.write_text(
-            content,
-            encoding="utf-8",
+        return self.file_manager.edit_file(
+            project_directory=project_directory,
+            requested_path=path,
+            old_text=old_text,
+            new_text=new_text,
         )
-
-        return {
-            "status": "edited",
-            "path": path,
-        }

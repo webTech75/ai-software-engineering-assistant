@@ -20,13 +20,19 @@ Author:
     Amr Elhabbal
 ===============================================================================
 """
+
 from pathlib import Path
 
 from app.agent.tools.base import BaseTool
-from app.models.project import Project
-
+from app.file_system.file_manager import FileManager
 
 class DeleteFileTool(BaseTool):
+
+    def __init__(
+        self,
+        file_manager: FileManager
+    ):
+        self.file_manager = file_manager
 
     @property
     def name(self) -> str:
@@ -62,31 +68,12 @@ class DeleteFileTool(BaseTool):
 
     def execute(
         self,
-        project: Project,
+        project_directory: str,
         path: str,
+        **kwargs
     ):
-        root = Path(project.project_directory).resolve()
-        file_path = (root / path).resolve()
 
-        # Prevent path traversal
-        if not str(file_path).startswith(str(root)):
-            raise ValueError("Invalid file path.")
-
-        if not file_path.exists():
-            return {
-                "status": "not_found",
-                "path": path,
-            }
-
-        if not file_path.is_file():
-            return {
-                "status": "not_a_file",
-                "path": path,
-            }
-
-        file_path.unlink()
-
-        return {
-            "status": "deleted",
-            "path": path,
-        }
+        return self.file_manager.delete_file(
+            project_directory=project_directory,
+            requested_path=path,
+        )

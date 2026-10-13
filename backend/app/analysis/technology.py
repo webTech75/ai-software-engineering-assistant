@@ -1,9 +1,13 @@
 from pathlib import Path
 
 from app.analysis.base import BaseAnalyzer
+from app.analysis.constants import IGNORED_DIRECTORIES
 
 
 class TechnologyAnalyzer(BaseAnalyzer):
+    """
+    Analyze project technologies.
+    """
 
     def analyze(self, project_directory: str) -> dict:
 
@@ -17,19 +21,47 @@ class TechnologyAnalyzer(BaseAnalyzer):
             "migration_tool": None,
         }
 
-        python_files = list(root.rglob("*.py"))
+        # Detect Python
+        python_files = []
+
+        for path in root.rglob("*.py"):
+
+            if any(
+                part in IGNORED_DIRECTORIES
+                for part in path.parts
+            ):
+                continue
+
+            python_files.append(path)
 
         if python_files:
             technology["language"] = "Python"
 
-        requirements = root / "requirements.txt"
+        # Find requirements.txt anywhere in project
+        requirements_files = []
 
-        if requirements.exists():
+        for path in root.rglob("requirements.txt"):
 
-            content = requirements.read_text(
-                encoding="utf-8",
-                errors="ignore",
-            ).lower()
+            if any(
+                part in IGNORED_DIRECTORIES
+                for part in path.parts
+            ):
+                continue
+
+            requirements_files.append(path)
+
+        if requirements_files:
+
+            requirements = requirements_files[0]
+
+            try:
+                content = requirements.read_text(
+                    encoding="utf-8",
+                    errors="ignore",
+                ).lower()
+
+            except Exception:
+                content = ""
 
             if "fastapi" in content:
                 technology["framework"] = "FastAPI"
@@ -40,7 +72,20 @@ class TechnologyAnalyzer(BaseAnalyzer):
             if "alembic" in content:
                 technology["migration_tool"] = "Alembic"
 
-        if list(root.rglob("*.db")):
+        # Detect database files
+        database_files = []
+
+        for path in root.rglob("*.db"):
+
+            if any(
+                part in IGNORED_DIRECTORIES
+                for part in path.parts
+            ):
+                continue
+
+            database_files.append(path)
+
+        if database_files:
             technology["database"] = "SQLite"
 
         return {
