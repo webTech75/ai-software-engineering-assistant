@@ -3,38 +3,64 @@ from typing import Any
 
 class ProjectAnalysisReportBuilder:
     """
-    Combines all analyzer results into a single project report.
+    Builds factual project analysis reports.
+
+    Purpose:
+        - Combine analyzer results.
+        - Provide structured project information.
+        - Prepare data for project review.
+
+    Does NOT:
+        - Generate recommendations.
+        - Evaluate architecture quality.
+        - Find code issues.
+        - Produce AI responses.
+
+    AI interpretation happens in:
+        ProjectReviewEngine
     """
 
     @staticmethod
     def build(
-        code_quality: list[dict[str, Any]] | None = None,
         statistics: dict[str, Any] | None = None,
-        structure: dict[str, Any] | None = None,
         technology: dict[str, Any] | None = None,
+        structure: dict[str, Any] | None = None,
         dependencies: dict[str, Any] | None = None,
-        security: list[dict[str, Any]] | None = None,
-        tests: dict[str, Any] | None = None,
-        bugs: list[dict[str, Any]] | None = None,
         api: dict[str, Any] | None = None,
-        models: list[dict[str, Any]] | None = None,
         database: dict[str, Any] | None = None,
         metrics: dict[str, Any] | None = None,
         complexity: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        """
+        Create a factual project analysis report.
+
+        This report describes:
+            - Project statistics.
+            - Technology stack.
+            - Architecture structure.
+            - Dependencies.
+            - Technical information.
+
+        It intentionally avoids:
+            - Recommendations.
+            - Code review comments.
+            - Bug reports.
+        """
 
         return {
-            "code_quality": code_quality or [],
             "statistics": statistics or {},
-            "structure": structure or {},
+
             "technology": technology or {},
+
+            "structure": structure or {},
+
             "dependencies": dependencies or {},
-            "security": security or [],
-            "tests": tests or {},
-            "bugs": bugs or [],
+
             "api": api or {},
-            "models": models or [],
+
             "database": database or {},
+
             "metrics": metrics or {},
+
             "complexity": complexity or {},
         }

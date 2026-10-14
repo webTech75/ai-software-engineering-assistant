@@ -33,6 +33,8 @@ htmlcov/
 uploads/
 backend/uploads/
 
+t.py
+
 # Node
 node_modules/
 

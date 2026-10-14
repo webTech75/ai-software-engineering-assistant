@@ -1,110 +1,161 @@
 """
 ===============================================================================
-File: chat.py
-
-Path: app/api/v1/chat.py
+File:
+    app/api/v1/chat.py
 
 Description:
-    Exposes the AI chat endpoint.
+    Chat API endpoint.
 
 Responsibilities:
-    - Authenticate the user.
-    - Validate project ownership.
-    - Save chat messages.
-    - Forward requests to the AI agent.
-    - Return the assistant response.
+    - Receive user messages.
+    - Load project information.
+    - Load limited conversation history.
+    - Send request to Agent.
+    - Save messages.
+    - Return agent response.
 
-Author:
-    Amr Elhabbal
+Notes:
+    - The Agent does not receive database models.
+    - Only project filesystem information is passed
+      when tools require file access.
+
 ===============================================================================
 """
 
-from fastapi import APIRouter, Depends
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.agent.service import AgentService
-from app.api.dependencies import get_current_user
-from app.api.v1.projects import get_project_service
 from app.db.database import get_db
-from app.models.user import User
-from app.schemas.chat import (
-    ChatRequest,
-    ChatResponse,
-    ChatMessageResponse,
-)
+from app.models.project import Project
+from app.schemas.chat import ChatRequest, ChatResponse
+
+from app.ai.llm.client import LLMClient
+
+from app.agent.agent import Agent
+from app.agent.planner import Planner
+from app.agent.executor import Executor
+from app.agent.response_builder import ResponseBuilder
+
 from app.services.chat_service import ChatService
-from app.services.project_service import ProjectService
+
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
-    prefix="/projects",
-    tags=["AI"],
+    prefix="/chat",
+    tags=["Chat"],
 )
 
 
-def get_chat_service(
-    db: Session = Depends(get_db),
-) -> ChatService:
-    return ChatService(db)
+def get_agent() -> Agent:
+    """
+    Create Agent instance with dependencies.
+    """
+
+    return Agent(
+        planner=Planner(),
+        executor=Executor(),
+        response_builder=ResponseBuilder(),
+        llm=LLMClient(),
+    )
 
 
 @router.post(
-    "/{project_id}/chat",
+    "/{project_id}",
     response_model=ChatResponse,
 )
 def chat(
     project_id: int,
     request: ChatRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    project_service: ProjectService = Depends(get_project_service),
-    chat_service: ChatService = Depends(get_chat_service),
 ):
-    # Verify the project belongs to the current user.
-    project = project_service.get_project(
-        project_id,
-        current_user,
+    """
+    Send a message to the AI software engineering agent.
+    """
+
+    chat_service = ChatService(db)
+
+    # -------------------------------------------------
+    # Load project
+    # -------------------------------------------------
+
+    project = (
+        db.query(Project)
+        .filter(Project.id == project_id)
+        .first()
     )
 
-    # Save the user's message.
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+
+    # -------------------------------------------------
+    # Load previous conversation history
+    # -------------------------------------------------
+
+    history_messages = chat_service.get_messages(
+        project_id
+    )
+
+    # Keep only recent messages
+    history_messages = history_messages[-10:]
+
+
+    history = [
+        {
+            "role": message.role,
+            "content": message.content,
+        }
+        for message in history_messages
+    ]
+
+
+    logger.info(
+        "Conversation history loaded: %s messages",
+        len(history),
+    )
+
+
+    # -------------------------------------------------
+    # Run AI agent
+    # -------------------------------------------------
+
+    agent = get_agent()
+
+    response = agent.run(
+        project_directory=project.project_directory,
+        message=request.message,
+        history=history,
+    )
+
+
+    # -------------------------------------------------
+    # Save conversation
+    # -------------------------------------------------
+
     chat_service.create_message(
-        project.id,
-        "user",
-        request.message,
+        project_id=project.id,
+        role="user",
+        content=request.message,
     )
 
-    # Ask the AI.
-    agent = AgentService(db)
-
-    answer = agent.ask(
-        project,
-        request.message,
-    )
-
-    # Save the AI response.
     chat_service.create_message(
-        project.id,
-        "assistant",
-        answer,
+        project_id=project.id,
+        role="assistant",
+        content=response,
     )
+
+
+    # -------------------------------------------------
+    # Return response
+    # -------------------------------------------------
 
     return ChatResponse(
-        answer=answer,
+        answer=response
     )
-
-@router.get(
-    "/{project_id}/chat",
-    response_model=list[ChatMessageResponse],
-)
-def get_chat_history(
-    project_id: int,
-    current_user: User = Depends(get_current_user),
-    project_service: ProjectService = Depends(get_project_service),
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    project = project_service.get_project(
-        project_id,
-        current_user,
-    )
-
-    return chat_service.get_messages(project.id)

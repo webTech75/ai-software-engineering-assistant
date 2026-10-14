@@ -18,6 +18,7 @@ Author:
 """
 
 from datetime import datetime, timezone
+from sqlalchemy.orm import relationship
 
 from sqlalchemy import (
     Column,
@@ -73,4 +74,9 @@ class ProjectSymbol(Base):
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
+    )
+
+    project_file = relationship(
+        "ProjectFile",
+        back_populates="symbols"
     )

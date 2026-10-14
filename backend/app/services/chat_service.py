@@ -5,9 +5,20 @@ from app.repositories.chat_repository import ChatRepository
 
 
 class ChatService:
+    """
+    Service layer for chat operations.
 
-    def __init__(self, db: Session):
+    Responsibilities:
+        - Create chat messages.
+        - Load limited conversation history.
+    """
+
+    def __init__(
+        self,
+        db: Session
+    ):
         self.repository = ChatRepository(db)
+
 
     def create_message(
         self,
@@ -15,6 +26,9 @@ class ChatService:
         role: str,
         content: str,
     ) -> ChatMessage:
+        """
+        Save a chat message.
+        """
 
         message = ChatMessage(
             project_id=project_id,
@@ -24,5 +38,22 @@ class ChatService:
 
         return self.repository.create(message)
 
-    def get_messages(self, project_id: int):
-        return self.repository.get_by_project(project_id)
+
+    def get_messages(
+        self,
+        project_id: int,
+        limit: int = 12,
+    ):
+        """
+        Get recent conversation history.
+
+        Only returns the latest messages
+        to prevent sending huge context
+        to the LLM.
+        """
+
+        messages = self.repository.get_by_project(
+            project_id
+        )
+
+        return messages[-limit:]

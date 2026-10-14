@@ -8,7 +8,6 @@ Description:
 
 Responsibilities:
     - Coordinate the agent workflow.
-    - Build project context.
     - Create execution plans.
     - Execute tools.
     - Build final responses.
@@ -23,190 +22,116 @@ Author:
 ===============================================================================
 """
 
-
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 
-
 class Agent:
-    """
-    Main AI software engineering agent.
-
-    Coordinates:
-
-        Project
-          |
-          v
-        ContextBuilder
-          |
-          v
-        Planner
-          |
-          v
-        Executor
-          |
-          v
-        ResponseBuilder
-
-    """
-
 
     def __init__(
         self,
         planner,
         executor,
-        context_builder,
         response_builder,
+        llm,
     ):
         """
         Initialize agent components.
         """
 
         self.planner = planner
-
         self.executor = executor
-
-        self.context_builder = context_builder
-
         self.response_builder = response_builder
-
-
+        self.llm = llm
 
     def run(
         self,
-        project,
+        project_directory,
         message: str,
+        history: list[dict] | None = None,
     ) -> str:
         """
-        Execute one AI request.
+        Execute the agent workflow.
 
-        Parameters:
-
-            project:
-                SQLAlchemy Project object.
-
-                Contains:
-
-                    project.id
-                    project.name
-                    project.description
-                    project.project_directory
-
-
-            message:
-                User request.
-
+        The project directory is only passed
+        to tools that require filesystem access.
         """
 
-
         # ---------------------------------------------------------
-        # Step 1:
-        # Build project knowledge context.
-        #
-        # Example:
-        #
-        # {
-        #     "files_count": 50,
-        #     "symbols_count": 200
-        # }
-        #
-        # This comes from the database.
-        # ---------------------------------------------------------
-
-        context = self.context_builder.build(
-            project
-        )
-
-
-        logger.info(
-            "Project context built for %s",
-            project.name,
-        )
-
-
-
-        # ---------------------------------------------------------
-        # Step 2:
-        # Convert user message into actions.
-        #
-        # Example:
-        #
-        # User:
-        #   "show files"
-        #
-        # Planner:
-        #
-        # {
-        #    "actions": [
-        #        {
-        #           "tool": "list_files"
-        #        }
-        #    ]
-        # }
-        #
+        # Create execution plan
         # ---------------------------------------------------------
 
         plan = self.planner.create_plan(
-            message
+            message,
+            "",
         )
 
+        if plan is None:
+            plan = {
+                "goal": message,
+                "actions": [],
+            }
 
-        logger.info(
-            "Execution plan created: %s",
-            plan,
-        )
-
-
+        logger.info("Execution plan: %s", plan)
 
         # ---------------------------------------------------------
-        # Step 3:
-        # Execute the selected tools.
-        #
-        # IMPORTANT:
-        #
-        # We pass Project.
-        #
-        # Executor will extract:
-        #
-        # project.project_directory
-        #
-        # when filesystem access is required.
-        #
+        # Execute tools
         # ---------------------------------------------------------
 
         execution_results = self.executor.execute(
             plan,
-            project,
+            project_directory,
         )
-
-
 
         logger.info(
-            "Tool execution completed"
-        )
-
-
-
-        # ---------------------------------------------------------
-        # Step 4:
-        # Create final assistant response.
-        #
-        # ResponseBuilder combines:
-        #
-        # - project context
-        # - tool results
-        #
-        # into user-friendly output.
-        #
-        # ---------------------------------------------------------
-
-        response = self.response_builder.build(
-            context,
+            "Execution results: %s",
             execution_results,
         )
 
+        # ---------------------------------------------------------
+        # Build conversation context
+        # ---------------------------------------------------------
+
+        conversation = ""
+
+        if history:
+            for item in history[-6:]:
+                conversation += (
+                    f"{item['role']}: "
+                    f"{item['content'][:300]}\n"
+                )
+
+        # ---------------------------------------------------------
+        # Generate LLM response
+        # ---------------------------------------------------------
+
+        llm_answer = self.llm.generate(
+            f"""
+                You are a software engineering assistant.
+
+                Conversation:
+                {conversation}
+
+                User request:
+                {message}
+
+                Tool results:
+                {execution_results}
+
+                Answer the user using the tool results when available.
+                If no tool results are available, answer using your software engineering knowledge.
+            """
+        )
+
+        # ---------------------------------------------------------
+        # Build final response
+        # ---------------------------------------------------------
+
+        response = self.response_builder.build(
+            execution_results,
+            llm_answer,
+        )
 
         return response

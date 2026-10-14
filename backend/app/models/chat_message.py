@@ -41,4 +41,7 @@ class ChatMessage(Base):
         nullable=False,
     )
 
-    project = relationship("Project")
+    project = relationship(
+        "Project",
+        back_populates="messages"
+    )

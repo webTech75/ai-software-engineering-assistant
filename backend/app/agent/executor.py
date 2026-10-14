@@ -1,7 +1,7 @@
 """
 ===============================================================================
-File: executor.py
-Path: app/agent/executor.py
+File:
+    app/agent/executor.py
 
 Description:
     Executes actions created by the Planner.
@@ -9,13 +9,14 @@ Description:
 Responsibilities:
     - Receive execution plans.
     - Select tools from ToolRegistry.
-    - Pass project filesystem information.
+    - Provide tool execution context.
     - Collect tool results.
 
 Does NOT:
     - Create plans.
     - Perform reasoning.
     - Access database directly.
+    - Manage project objects.
 
 Author:
     Amr Elhabbal
@@ -35,36 +36,34 @@ class Executor:
     Executes tools selected by the Planner.
     """
 
+
     def __init__(self):
 
         self.registry = ToolRegistry()
 
 
+
     def execute(
         self,
         plan: dict,
-        project,
+        project_directory: str,
     ) -> dict:
         """
         Execute the generated plan.
 
-        Project contains:
+        Tools receive only the information
+        they need.
 
-            project.id
-            project.name
-            project.project_directory
-
-        Tools receive:
-
-            project.project_directory
+        Example:
+            project_directory
+            file path
+            search query
         """
 
         results = {}
-
-        project_directory = (
-            project.project_directory
-        )
-
+        
+        if not plan:
+            return {}
 
         for action in plan.get(
             "actions",
@@ -74,6 +73,7 @@ class Executor:
             tool_name = action.get(
                 "tool"
             )
+
 
             parameters = action.get(
                 "parameters",
@@ -101,21 +101,18 @@ class Executor:
             )
 
 
-            print(
-                "TOOL:",
-                tool_name
-            )
-
-            print(
-                "PARAMETERS:",
-                parameters
-            )
-
-
             try:
 
+                if (
+                    "project_directory"
+                    not in parameters
+                ):
+                    parameters[
+                        "project_directory"
+                    ] = project_directory
+
+
                 results[tool_name] = tool.execute(
-                    project_directory=project_directory,
                     **parameters,
                 )
 
@@ -127,7 +124,8 @@ class Executor:
                 )
 
                 results[tool_name] = {
-                    "error": str(error)
+                    "error": str(error),
+                    "type": type(error).__name__,
                 }
 
 

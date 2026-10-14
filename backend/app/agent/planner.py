@@ -42,6 +42,7 @@ class Planner:
     def create_plan(
         self,
         request: str,
+        llm_answer: str,
     ) -> dict:
         """
         Create an execution plan from a user request.
@@ -49,6 +50,7 @@ class Planner:
 
         request_clean = request.strip().rstrip(").,")
         request_lower = request_clean.lower()
+        analysis = llm_answer.lower()
 
         actions = []
 
@@ -63,9 +65,12 @@ class Planner:
         # ---------------------------------------------------------
 
         if (
-            "read" in request_lower
-            or "show" in request_lower
-            or "explain" in request_lower
+            "read " in request_lower
+            or "explain " in request_lower
+            or (
+                "show " in request_lower
+                and "files" not in request_lower
+            )
         ):
 
             path_match = re.search(
@@ -290,3 +295,5 @@ class Planner:
             "goal": request,
             "actions": actions,
         }
+
+

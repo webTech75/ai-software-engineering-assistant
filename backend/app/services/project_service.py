@@ -23,6 +23,7 @@ Author:
 """
 
 from fastapi import HTTPException, status
+from pathlib import Path
 
 from app.models.project import Project
 from app.models.user import User
@@ -31,7 +32,7 @@ from app.schemas.project import ProjectCreate, ProjectUpdate
 from sqlalchemy.orm import Session
 from app.analysis.scanner import ProjectScanner
 from app.utils.file_storage import get_project_directory
-from app.schemas import project
+
 
 class ProjectService:
 
@@ -94,6 +95,7 @@ class ProjectService:
             current_user,
         )
 
+        self.remove_project_files(project)
         self.repository.delete(project)
 
     def update_project(
@@ -144,3 +146,15 @@ class ProjectService:
 
     def save(self, project: Project) -> Project:
         return self.repository.save(project)
+
+    
+    def remove_project_files(
+        self,
+        project: Project,
+    ) -> None:
+
+        project_dir = get_project_directory(project.id)
+
+        if Path(project_dir).exists():
+            import shutil
+            shutil.rmtree(project_dir)

@@ -69,18 +69,21 @@ class ProjectScanner:
 
 
         report = ProjectAnalysisReportBuilder.build(
-            code_quality=result.get("code_quality"),
+            
             statistics=result.get("statistics"),
-            structure=result.get("structure"),
+
             technology=result.get("technology"),
+
+            structure=result.get("structure"),
+
             dependencies=result.get("dependencies"),
-            security=result.get("security"),
-            tests=result.get("tests"),
-            bugs=result.get("bugs"),
+
             api=result.get("api"),
-            models=result.get("models"),
+
             database=result.get("database"),
+
             metrics=result.get("metrics"),
+
             complexity=result.get("complexity"),
         )
 

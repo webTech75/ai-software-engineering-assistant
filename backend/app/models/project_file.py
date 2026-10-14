@@ -46,3 +46,9 @@ class ProjectFile(Base):
         "Project",
         back_populates="files"
     )
+    
+    symbols = relationship(
+        "ProjectSymbol",
+        back_populates="project_file",
+        cascade="all, delete-orphan"
+    )

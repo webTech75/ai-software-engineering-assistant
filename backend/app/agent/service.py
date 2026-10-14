@@ -9,16 +9,15 @@ Description:
 
 Responsibilities:
     - Receive project requests from the API.
-    - Pass the database Project object to the agent.
+    - Pass the Project object to the agent.
     - Initialize agent components.
 
 Important:
-    The Project object is the source of truth.
-
     The filesystem path:
+
         project.project_directory
 
-    is only used by tools that access files.
+    is only used by tools that require filesystem access.
 
 Author:
     Amr Elhabbal
@@ -27,13 +26,11 @@ Author:
 
 import logging
 
-from sqlalchemy.orm import Session
-
 from app.agent.agent import Agent
 from app.agent.planner import Planner
 from app.agent.executor import Executor
-from app.agent.context_builder import ContextBuilder
 from app.agent.response_builder import ResponseBuilder
+from app.ai.llm.client import LLMClient
 
 
 logger = logging.getLogger(__name__)
@@ -46,18 +43,16 @@ class AgentService:
     """
 
 
-    def __init__(
-        self,
-        db: Session,
-    ):
+    def __init__(self):
         """
         Initialize the agent pipeline.
 
         The agent needs:
+
             - Planner
             - Executor
-            - Context Builder
             - Response Builder
+            - LLM Client
         """
 
         self.agent = Agent(
@@ -70,18 +65,13 @@ class AgentService:
             executor=Executor(),
 
 
-            # Loads project information from database
-            #
-            # Receives a DB session because it needs:
-            #   - ProjectFile
-            #   - ProjectSymbol
-            #
-            context_builder=ContextBuilder(db),
-
-
             # Converts execution results
             # into the final assistant response
             response_builder=ResponseBuilder(),
+
+
+            # Generates final AI responses
+            llm=LLMClient(),
         )
 
 
@@ -94,20 +84,16 @@ class AgentService:
         """
         Send a request to the AI agent.
 
-        IMPORTANT:
+        The Project object is passed only because
+        tools may need:
 
-        We pass the whole Project object.
-
-        because the agent needs database information:
-
-            project.id
-            project.name
-            project.description
             project.project_directory
 
+        The agent does not load project files
+        or project index data here.
         """
 
         return self.agent.run(
-            project,
+            project.project_directory,
             message,
         )

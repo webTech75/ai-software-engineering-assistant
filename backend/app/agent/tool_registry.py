@@ -41,7 +41,6 @@ from app.agent.tools.search_text import SearchTextTool
 from app.agent.tools.write_file import WriteFileTool
 from app.agent.tools.edit_file import EditFileTool
 from app.agent.tools.delete_file import DeleteFileTool
-from app.agent.tools.analyze_project import AnalyzeProjectTool
 
 class ToolRegistry:
     """Stores and provides access to all agent tools."""
@@ -57,7 +56,6 @@ class ToolRegistry:
             WriteFileTool(file_manager),
             EditFileTool(file_manager),
             DeleteFileTool(file_manager),
-            AnalyzeProjectTool(),
         ]
 
         self._tools = {

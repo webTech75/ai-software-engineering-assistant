@@ -67,6 +67,7 @@ ALLOWED_EXTENSIONS = {
     ".yaml",
     ".yml",
     ".toml",
+    ".txt",
 }
 
 
