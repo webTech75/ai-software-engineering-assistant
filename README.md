@@ -22,6 +22,7 @@ Analyze software projects the way an experienced software engineer would.
 </p>
 
 ---
+![alt text](frontend/src/assets/landing.png)
 ![alt text](frontend/src/assets/ai-swe.png)
 ## Overview
 
