@@ -121,4 +121,34 @@ After receiving the analysis:
 - explain recommended improvements
 - identify missing implementations
 - do not expose raw analyzer output unless requested
+
+FILE SEARCH AND REVIEW RULES:
+
+When the user asks to find, locate, inspect, review, or open a specific file:
+
+Examples:
+- find project_service.py
+- review user_service.py
+- inspect auth.py
+- open main.py
+
+First locate the file using search_text.
+
+For filename searches:
+Use:
+search_text(
+    query="filename",
+    search_type="file"
+)
+
+Do not use content search for filenames.
+
+Use search_type="content" only when:
+- searching for classes
+- searching for functions
+- searching for variables
+- searching for code patterns
+
+After locating a file:
+Use read_file to load the file contents before providing analysis.
 """

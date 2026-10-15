@@ -62,7 +62,8 @@ class ToolRegistry:
             tool.name: tool
             for tool in tools
         }
-        print(self._tools.keys())
+
+
     def get(self, name: str):
         return self._tools.get(name)
 

@@ -36,13 +36,61 @@ class Executor:
     Executes tools selected by the Planner.
     """
 
-
     def __init__(self):
 
         self.registry = ToolRegistry()
 
+    def resolve_parameters(
+        self,
+        parameters: dict,
+        results: dict,
+    ) -> dict:
+        """
+        Replace references to previous tool results.
 
+        Example:
+            {{search_text.path}}
 
+        becomes:
+
+            app/services/project_service.py
+        """
+
+        resolved = {}
+
+        for key, value in parameters.items():
+
+            if isinstance(value, str) and value.startswith("{{"):
+
+                reference = (
+                    value
+                    .replace("{{", "")
+                    .replace("}}", "")
+                )
+
+                parts = reference.split(".")
+
+                if len(parts) == 2:
+
+                    tool_name = parts[0]
+                    field = parts[1]
+
+                    tool_result = results.get(
+                        tool_name
+                    )
+
+                    if isinstance(tool_result, list):
+                        tool_result = tool_result[0]
+
+                    if isinstance(tool_result, dict):
+                        resolved[key] = tool_result.get(field)
+
+                        continue
+
+            resolved[key] = value
+
+        return resolved
+        
     def execute(
         self,
         plan: dict,
@@ -61,9 +109,10 @@ class Executor:
         """
 
         results = {}
-        
+
         if not plan:
             return {}
+
 
         for action in plan.get(
             "actions",
@@ -110,6 +159,17 @@ class Executor:
                     parameters[
                         "project_directory"
                     ] = project_directory
+
+
+                print("================ TOOL CALL ================")
+                print("TOOL:", tool_name)
+                print("ARGUMENTS:", parameters)
+                print("==========================================")
+
+                parameters = self.resolve_parameters(
+                    parameters,
+                    results,
+                )
 
 
                 results[tool_name] = tool.execute(

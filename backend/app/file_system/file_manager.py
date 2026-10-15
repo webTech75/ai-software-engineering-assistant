@@ -468,3 +468,27 @@ class FileManager:
                 continue
 
         return results
+
+    def find_files(
+        self,
+        project_directory: str,
+        query: str
+    ):
+
+        root = Path(project_directory).resolve()
+
+        results = []
+
+        for path in root.rglob("*"):
+
+            if path.is_file():
+
+                if query.lower() in path.name.lower():
+
+                    results.append({
+                        "path": str(
+                            path.relative_to(root)
+                        )
+                    })
+
+        return results

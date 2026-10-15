@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     upload_folder: str
     openai_api_key: str = ""
     LLM_PROVIDER: str
+    llm_max_tokens: int
+    llm_explain_max_tokens: int
+    llm_review_max_tokens: int
     LLM_API_KEY: str
     LLM_MODEL: str
     LLM_BASE_URL: str

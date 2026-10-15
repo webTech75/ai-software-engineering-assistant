@@ -24,8 +24,11 @@ Author:
 
 import logging
 
+from app.core.config import settings
+
 
 logger = logging.getLogger(__name__)
+
 
 
 class Agent:
@@ -46,6 +49,8 @@ class Agent:
         self.response_builder = response_builder
         self.llm = llm
 
+
+
     def run(
         self,
         project_directory,
@@ -55,9 +60,24 @@ class Agent:
         """
         Execute the agent workflow.
 
-        The project directory is only passed
-        to tools that require filesystem access.
+        Workflow:
+
+            User message
+                  |
+                  v
+              Planner
+                  |
+                  v
+              Executor
+                  |
+                  v
+             LLM response
+                  |
+                  v
+          Response builder
         """
+
+
 
         # ---------------------------------------------------------
         # Create execution plan
@@ -65,19 +85,39 @@ class Agent:
 
         plan = self.planner.create_plan(
             message,
-            "",
         )
 
+        print("================ PLAN ================")
+        print(plan)
+        print("======================================")
+
+
         if plan is None:
+
             plan = {
+
                 "goal": message,
+
+                "task_type": "general",
+
                 "actions": [],
+
             }
 
-        logger.info("Execution plan: %s", plan)
+
+        logger.info(
+            "Execution plan: %s",
+            plan,
+        )
+
+
 
         # ---------------------------------------------------------
         # Execute tools
+        #
+        # General questions return no actions.
+        #
+        # Executor should simply return empty results.
         # ---------------------------------------------------------
 
         execution_results = self.executor.execute(
@@ -85,10 +125,13 @@ class Agent:
             project_directory,
         )
 
+
         logger.info(
             "Execution results: %s",
             execution_results,
         )
+
+
 
         # ---------------------------------------------------------
         # Build conversation context
@@ -96,12 +139,40 @@ class Agent:
 
         conversation = ""
 
+
         if history:
+
             for item in history[-6:]:
+
                 conversation += (
                     f"{item['role']}: "
                     f"{item['content'][:300]}\n"
                 )
+
+
+
+        # ---------------------------------------------------------
+        # Select token limit
+        # ---------------------------------------------------------
+
+        task_type = plan.get(
+            "task_type",
+            "general",
+        )
+
+
+        max_tokens = self.get_max_tokens(
+            task_type
+        )
+
+
+        logger.info(
+            "LLM task type: %s | max_tokens: %s",
+            task_type,
+            max_tokens,
+        )
+
+
 
         # ---------------------------------------------------------
         # Generate LLM response
@@ -109,21 +180,27 @@ class Agent:
 
         llm_answer = self.llm.generate(
             f"""
-                You are a software engineering assistant.
+            You are a software engineering assistant.
 
-                Conversation:
-                {conversation}
+            Conversation:
+            {conversation}
 
-                User request:
-                {message}
+            User request:
+            {message}
 
-                Tool results:
-                {execution_results}
+            Tool results:
+            {execution_results}
 
-                Answer the user using the tool results when available.
-                If no tool results are available, answer using your software engineering knowledge.
-            """
+            Answer the user using the tool results when available.
+
+            If no tool results are available,
+            answer normally using your software engineering knowledge.
+            """,
+
+            max_tokens=max_tokens,
         )
+
+
 
         # ---------------------------------------------------------
         # Build final response
@@ -134,4 +211,74 @@ class Agent:
             llm_answer,
         )
 
+
         return response
+
+
+
+    def get_max_tokens(
+        self,
+        task_type: str,
+    ) -> int:
+        """
+        Select LLM token limit based on task type.
+
+        Values come from environment variables
+        through application settings.
+
+        No hardcoded token numbers here.
+        """
+
+
+
+        # ---------------------------------------------------------
+        # Explanation tasks
+        #
+        # Example:
+        #
+        #   explain project_service.py
+        #
+        # ---------------------------------------------------------
+
+        if task_type == "explain":
+
+            return settings.llm_explain_max_tokens
+
+
+
+        # ---------------------------------------------------------
+        # Review tasks
+        #
+        # Example:
+        #
+        #   find bugs in auth.py
+        #
+        # ---------------------------------------------------------
+
+        if task_type in [
+
+            "review",
+
+            "bug_analysis",
+
+            "security_review",
+
+            "quality_review",
+
+        ]:
+
+            return settings.llm_review_max_tokens
+
+
+
+        # ---------------------------------------------------------
+        # Default
+        #
+        # General questions:
+        #
+        #   what is FastAPI?
+        #
+        # ---------------------------------------------------------
+
+        return settings.llm_max_tokens
+    
