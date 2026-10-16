@@ -1,41 +1,38 @@
-import axios from "axios";
+import axios from 'axios'
 
-import { storage, logout } from "@/features/auth/auth";
+import { storage, logout } from '@/features/auth/auth'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
-});
+  baseURL: import.meta.env.VITE_API_URL
+})
 
 api.interceptors.request.use(
-  (config) => {
-    const token = storage.getToken();
+  config => {
+    const token = storage.getToken()
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
+    return config
   },
-  (error) => Promise.reject(error)
-);
+  error => Promise.reject(error)
+)
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
+  response => {
+    return response
   },
 
-  (error) => {
-    if (error.response?.status === 401 && !error.config.url.includes('/')){
-      logout();
+  error => {
+    if (error.response?.status === 401 && !error.config.url.includes('/')) {
+      logout()
 
-      window.location.href = "/";
+      window.location.href = '/'
     }
-    
-    return Promise.reject(error);
-  }
-);
 
-export { api };
+    return Promise.reject(error)
+  }
+)
+
+export { api }

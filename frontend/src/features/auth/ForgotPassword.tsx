@@ -1,145 +1,106 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent } from 'react'
 
-import { forgotPassword } from "./auth";
+import { forgotPasswordRequest } from '@/api/authReq'
 
 type ForgotPasswordProps = {
-  onBack: () => void;
-};
+  onBack: () => void
+}
 
-export function ForgotPassword({ onBack }: ForgotPasswordProps) {
+export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-    const [email, setEmail] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+  async function handleSubmit (event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    if (error) setError('')
+    if (success) setSuccess('')
 
-
-        if (error) setError("");
-        if (success) setSuccess("");
-
-        if (!email.trim()) {
-            setError("Email is required.");
-            return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(email)) {
-            setError("Please enter a valid email address.");
-            return;
-        }
-
-        try {
-            setLoading(true);
-
-            await forgotPassword(email);
-            setError("");
-            setSuccess(
-                "If an account exists, a password reset link has been sent."
-            );
-
-            setEmail("");
-
-            setSuccess(
-                "If an account exists, a password reset link will be sent."
-            );
-
-            setEmail("");
-
-        } catch (err) {
-            console.error(err);
-
-            setError("Unable to process your request.");
-
-        } finally {
-            setLoading(false);
-        }
+    if (!email.trim()) {
+      setError('Email is required.')
+      return
     }
 
-    return (
-        <>
-            {/* <div className="mb-8 text-center">
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-                <h1 className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-3xl font-bold text-transparent">
-                    Forgot Password
-                </h1>
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.')
+      return
+    }
 
-                <p className="mt-2 text-sm text-muted-foreground">
-                    Enter your email address to reset your password.
-                </p>
+    try {
+      setLoading(true)
 
-            </div> */}
+      await forgotPasswordRequest(email)
+      setError('')
+      setSuccess('If an account exists, a password reset link has been sent.')
 
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4"
-            >
+      setEmail('')
 
-                <div>
+      setSuccess('If an account exists, a password reset link will be sent.')
 
-                    <label
-                        htmlFor="email"
-                        className="mb-2 block text-sm font-medium"
-                    >
-                        Email
-                    </label>
+      setEmail('')
+    } catch (err) {
+      console.error(err)
 
-                    <input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (success) setSuccess("");
-                            if (error) setError("");
-                        }}
-                        className="w-full px-3 py-2 outline-none focus:border-primary"
-                    />
+      setError('Unable to process your request.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-                </div>
+  return (
+    <>
+      <form onSubmit={handleSubmit} className='space-y-4'>
+        <div>
+          <label htmlFor='email' className='mb-2 block text-sm font-medium'>
+            Email
+          </label>
 
-                {error && (
-                    <p
-                        className="text-sm text-destructive"
-                        role="alert"
-                    >
-                        {error}
-                    </p>
-                )}
+          <input
+            id='email'
+            type='email'
+            autoComplete='email'
+            value={email}
+            onChange={e => {
+              setEmail(e.target.value)
+              if (success) setSuccess('')
+              if (error) setError('')
+            }}
+            className='w-full px-3 py-2 outline-none focus:border-primary'
+          />
+        </div>
 
-                {success && (
-                    <p
-                        className="text-sm text-green-600"
-                        role="status"
-                    >
-                        {success}
-                    </p>
-                )}
+        {error && (
+          <p className='text-sm text-destructive' role='alert'>
+            {error}
+          </p>
+        )}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-primary w-full py-2.5 font-medium disabled:opacity-50"
-                >
-                    {loading
-                        ? "Sending..."
-                        : "Send Reset Link"}
-                </button>
+        {success && (
+          <p className='text-sm text-green-600' role='status'>
+            {success}
+          </p>
+        )}
 
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="w-full text-sm text-primary hover:underline"
-                >
-                    Back to Sign In
-                </button>
+        <button
+          type='submit'
+          disabled={loading}
+          className='btn-primary w-full py-2.5 font-medium disabled:opacity-50'
+        >
+          {loading ? 'Sending...' : 'Send Reset Link'}
+        </button>
 
-            </form>
-
-        </>
-    );
+        <button
+          type='button'
+          onClick={onBack}
+          className='w-full text-sm text-primary hover:underline'
+        >
+          Back to Sign In
+        </button>
+      </form>
+    </>
+  )
 }

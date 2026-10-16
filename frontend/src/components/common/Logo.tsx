@@ -1,4 +1,4 @@
-import RobotLogo from "./RebotLogo";
+import RobotLogo from "./RobotLogo";
 
 export function Logo() {
   return (

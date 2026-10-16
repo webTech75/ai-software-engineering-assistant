@@ -53,12 +53,6 @@ class UserRepository:
         self.db.refresh(user)
         return user
 
-    def get_by_email(self, email: str) -> User | None:
-        return (
-            self.db.query(User)
-            .filter(User.email == email)
-            .first()
-        )
 
     def get_by_id(self, user_id: int) -> User | None:
         return (
