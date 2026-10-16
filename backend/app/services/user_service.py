@@ -26,7 +26,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import secrets
 from datetime import datetime, timedelta, timezone
-
+from app.services.email_service import send_password_reset_email
+from app.core.config import settings
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
@@ -113,10 +114,18 @@ class UserService:
         )
 
         self.password_reset_repository.create(password_reset)
+        
+        reset_link = (
+            f"{settings.frontend_url}/reset-password?token={token}"
+        )
 
+        send_password_reset_email(
+            user.email,
+            reset_link,
+        )
         print("\n==============================")
         print("PASSWORD RESET LINK")
-        print(f"http://localhost:5173/reset-password?token={token}")
+        print(reset_link)
         print("==============================\n")
 
     def reset_password(self, token: str, password: str):

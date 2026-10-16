@@ -28,7 +28,10 @@ class Settings(BaseSettings):
     algorithm: str
     access_token_expire_minutes: int
     upload_folder: str
+    frontend_url: str
+
     openai_api_key: str = ""
+
     LLM_PROVIDER: str
     llm_max_tokens: int
     llm_explain_max_tokens: int
@@ -36,7 +39,15 @@ class Settings(BaseSettings):
     LLM_API_KEY: str
     LLM_MODEL: str
     LLM_BASE_URL: str
+
     ALLOWED_ORIGINS: list[str] = []
+    
+
+    email_host: str
+    email_port: int = 587
+    email_username: str
+    email_password: str
+    email_from: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
