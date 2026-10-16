@@ -1,20 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthContext";
-import { AuthBackground } from "@/components/common/AuthBackground";
-import { RobotMascot } from "@/components/common/RobotMascot";
+
 import { login, register } from "./auth";
 
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "forgot";
 
-export function LoginForm() {
+type LoginFormProps = {
+  mode: AuthMode;
+  setMode: (mode: AuthMode) => void;
+};
+
+export function LoginForm({ mode, setMode }: LoginFormProps) {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState("");
@@ -92,6 +95,10 @@ export function LoginForm() {
         }
     }
 
+    if (mode === "forgot") {
+      return;
+    }
+
     try {
         setLoading(true);
 
@@ -100,15 +107,17 @@ export function LoginForm() {
             await refreshUser();
             setUsername("");
             setPassword("");
-            navigate("/", { replace: true });
+            navigate("/dashboard", { replace: true });
         } else {
             await register(username, email, password);
             setSuccess("Account created successfully. Please sign in.");
-            setMode("login");
             setPassword("");
             setUsername("");
             setEmail("");
             setConfirmPassword("");
+            setTimeout(() => {
+              setMode("login");
+            }, 4000);
         }
 
     } catch (err) {
@@ -129,63 +138,7 @@ export function LoginForm() {
 
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4">
-      <AuthBackground />
-     
-      <div className="auth-card relative z-10 w-full max-w-md rounded-2xl p-8">
-        <div className="mb-8 text-center">
-          <div className="mb-3 text-4xl">
-             <RobotMascot mood={"idle"} />
-          </div>
-         <h1 className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-3xl font-bold text-transparent">
-            {mode === "login"
-                ? "AI Software Engineering Assistant"
-                : "Create Your Account"}
-        </h1>
-
-        <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "login"
-                ? "Your AI Pair Programmer"
-                : "Join your AI Pair Programmer"}
-        </p>
-        </div>
-
-        <div className="mb-6 flex rounded-lg border border-border p-1">
-
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                setError("");
-              }}
-              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all ${
-                mode === "login"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              Sign In
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMode("register");
-                setPassword("");
-                setUsername("");
-                setError("");
-              }}
-              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all ${
-                mode === "register"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              Register
-            </button>
-
-          </div>
-
+      <>
         <form onSubmit={handleSubmit} className="space-y-4 transition-all duration-300">
           <div>
             <label htmlFor="username" className="mb-2 block text-sm font-medium">
@@ -244,18 +197,6 @@ export function LoginForm() {
               className="w-full px-3 py-2 outline-none focus:border-primary"
             />
           </div>
-           {mode === "login" && (
-              <div className="mt-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => navigate("/forgot-password")}
-                  className="text-sm text-primary transition-colors hover:underline"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            )}
-
              {mode === "register" && (
               <div>
                 <label
@@ -304,7 +245,6 @@ export function LoginForm() {
                 : "Create Account"}
           </button>
         </form>
-      </div>
-    </div>
+      </>
   );
 }

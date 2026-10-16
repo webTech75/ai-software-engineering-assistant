@@ -159,3 +159,54 @@ def chat(
     return ChatResponse(
         answer=response
     )
+
+@router.get(
+    "/{project_id}/history",
+)
+def get_chat_history(
+    project_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Get previous chat messages for a project.
+    """
+
+    chat_service = ChatService(db)
+
+    # -------------------------------------------------
+    # Verify project exists
+    # -------------------------------------------------
+
+    project = (
+        db.query(Project)
+        .filter(Project.id == project_id)
+        .first()
+    )
+
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+    # -------------------------------------------------
+    # Load messages
+    # -------------------------------------------------
+
+    messages = chat_service.get_messages(
+        project_id
+    )
+
+    # -------------------------------------------------
+    # Return clean response
+    # -------------------------------------------------
+
+    return [
+        {
+            "id": message.id,
+            "role": message.role,
+            "content": message.content,
+            "created_at": message.created_at,
+        }
+        for message in messages
+    ]

@@ -73,7 +73,7 @@ export async function sendChatMessageRequest(
   projectId: number,
   message: string
 ) {
-  const { data } = await api.post(`/projects/${projectId}/chat`, {
+  const { data } = await api.post(`/chat/${projectId}`, {
     message,
   });
   return data;
@@ -81,7 +81,7 @@ export async function sendChatMessageRequest(
 
 // AI chat history
 export async function getChatHistoryRequest(projectId: number) {
-  const { data } = await api.get(`/projects/${projectId}/chat`);
+  const { data } = await api.get(`/chat/${projectId}/history`);
   return data;
 }
 

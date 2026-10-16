@@ -55,7 +55,7 @@ export function ResetPassword() {
             setPassword("");
             setConfirmPassword("");
             setTimeout(() => {
-                navigate("/login");
+                navigate("/");
             }, 2000);
         } catch(err: any) {
             setError(
@@ -68,96 +68,93 @@ export function ResetPassword() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
+        <div className="auth-card relative z-10 w-full max-w-md rounded-2xl p-8">   
 
-            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-
-                <h1 className="text-3xl font-bold text-center text-slate-900">
+           <div className="mb-8 text-center">
+                <h1 className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-3xl font-bold text-transparent">
                     Reset Password
                 </h1>
 
-                <p className="mt-2 text-center text-slate-500">
+                <p className="mt-2 text-sm text-muted-foreground">
                     Create a new password for your account.
                 </p>
-
-                {error && (
-                    <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
-                        {error}
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-3 text-green-700">
-                        {success}
-                    </div>
-                )}
-
-                {!token ? (
-
-                    <div className="mt-6">
-
-                        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
-                            Invalid password reset link.
-                        </div>
-
-                    </div>
-
-                ) : (
-
-                    <form
-                        onSubmit={handleSubmit}
-                        className="mt-6 space-y-5"
-                    >
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-medium text-slate-700">
-                                New Password
-                            </label>
-
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => {
-                                    setPassword(e.target.value)
-                                    setError("");
-                                }}
-                                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            />
-
-                        </div>
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-medium text-slate-700">
-                                Confirm Password
-                            </label>
-
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => {
-                                    setConfirmPassword(e.target.value)
-                                    setError("");
-                                }}
-                                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            />
-
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {loading ? "Resetting..." : "Reset Password"}
-                        </button>
-
-                    </form>
-
-                )}
-
             </div>
+
+            {error && (
+                <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+                    {error}
+                </div>
+            )}
+
+            {success && (
+                <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-3 text-green-700">
+                    {success}
+                </div>
+            )}
+
+            {!token ? (
+
+                <div className="mt-6">
+
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+                        Invalid password reset link.
+                    </div>
+
+                </div>
+
+            ) : (
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="mt-6 space-y-5"
+                >
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-medium">
+                            New Password
+                        </label>
+
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => {
+                                setPassword(e.target.value)
+                                setError("");
+                            }}
+                            className="w-full px-3 py-2 outline-none focus:border-primary"
+                        />
+
+                    </div>
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-medium">
+                            Confirm Password
+                        </label>
+
+                        <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => {
+                                setConfirmPassword(e.target.value)
+                                setError("");
+                            }}
+                            className="w-full px-3 py-2 outline-none focus:border-primary"
+                        />
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary w-full py-2.5 font-medium disabled:opacity-50">
+                        {loading ? "Resetting..." : "Reset Password"}
+                    </button>
+
+                </form>
+
+            )}
 
         </div>
     );

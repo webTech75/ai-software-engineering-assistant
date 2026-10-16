@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 const navigation = [
   {
     label: "Dashboard",
-    path: "/",
+    path: "/dashboard",
   },
 ];
 

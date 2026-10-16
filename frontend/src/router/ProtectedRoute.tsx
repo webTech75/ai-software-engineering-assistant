@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const token = storage.getToken();
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

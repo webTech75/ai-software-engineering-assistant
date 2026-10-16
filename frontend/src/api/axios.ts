@@ -4,6 +4,9 @@ import { storage, logout } from "@/features/auth/auth";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
 
 api.interceptors.request.use(
@@ -25,10 +28,10 @@ api.interceptors.response.use(
   },
 
   (error) => {
-    if (error.response?.status === 401 && !error.config.url.includes('/login')){
+    if (error.response?.status === 401 && !error.config.url.includes('/')){
       logout();
 
-      window.location.href = "/login";
+      window.location.href = "/";
     }
     
     return Promise.reject(error);
