@@ -104,7 +104,7 @@ def chat(
     )
 
     # Keep only recent messages
-    history_messages = history_messages[-10:]
+    history_messages = history_messages[12:]
 
 
     history = [

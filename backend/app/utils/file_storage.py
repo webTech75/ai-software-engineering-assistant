@@ -19,6 +19,13 @@ def get_project_directory(project_id: int) -> Path:
     project_dir.mkdir(parents=True, exist_ok=True)
     return project_dir
 
+def get_existing_project_directory(project_id: int) -> Path:
+    """
+    Returns a project's directory without creating it.
+    Used for cleanup operations.
+    """
+    return UPLOAD_DIR / f"project_{project_id}"
+
 
 def save_uploaded_file(project_id: int, file: UploadFile) -> str:
     """
@@ -62,3 +69,12 @@ def safe_extract_zip(zip_ref, destination: Path):
             )
 
         zip_ref.extract(member, destination)
+
+
+def delete_project_directory(
+        project_directory: str
+    ):
+        path = Path(project_directory)
+
+        if path.exists():
+            shutil.rmtree(path)

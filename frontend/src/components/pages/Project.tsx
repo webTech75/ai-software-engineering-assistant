@@ -1,0 +1,154 @@
+import { useEffect, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom'
+
+import {
+  sendChatMessageRequest,
+  getChatHistoryRequest,
+  getProjectRequest
+} from '@/api/requests'
+
+import { useAuth } from '@/components/auth/AuthContext'
+
+import { ProjectHeader } from '@/components/projectWorkspace/ProjectHeader'
+import { NeuraChat } from '@/components/chat/NeuraChat'
+import type { Project } from '@/types/project'
+import type { ChatMessage } from '@/types/chat'
+import { ProjectSidebar } from '@/components/projectWorkspace/ProjectSidebar'
+
+export function Project () {
+  const { projectId } = useParams<{ projectId: string }>()
+  const id = Number(projectId)
+
+  const { user, showToast } = useAuth()
+
+  const [project, setProject] = useState<Project | null>(null)
+  const [loadingProject, setLoadingProject] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [loadingHistory, setLoadingHistory] = useState(true)
+
+  const [message, setMessage] = useState('')
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    loadProject()
+    loadChatHistory()
+  }, [projectId])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    })
+  }, [messages])
+
+  async function loadProject () {
+    if (!projectId) {
+      setLoadingProject(false)
+      return
+    }
+
+    try {
+      const data = await getProjectRequest(Number(projectId))
+
+      setProject(data)
+    } catch (error) {
+      console.error('Unable to load project.', error)
+      showToast('Unable to load project.', 'error')
+    } finally {
+      setLoadingProject(false)
+    }
+  }
+
+  async function loadChatHistory () {
+    if (!projectId) {
+      setLoadingHistory(false)
+      return
+    }
+
+    try {
+      const history = await getChatHistoryRequest(Number(projectId))
+
+      setMessages(history)
+    } catch (error) {
+      console.error('Unable to load chat history.', error)
+      showToast('Unable to load chat history.', 'error')
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  async function handleSubmit (event: FormEvent) {
+    event.preventDefault()
+
+    const text = message.trim()
+
+    const id = Number(projectId)
+
+    if (!text || !projectId || !Number.isInteger(id) || id <= 0) {
+      showToast('Enter a message and open a valid project.', 'error')
+      return
+    }
+
+    setMessage('')
+
+    setMessages(current => [
+      ...current,
+      {
+        role: 'user',
+        content: text
+      }
+    ])
+
+    setLoading(true)
+
+    try {
+      const response = await sendChatMessageRequest(id, text)
+
+      setMessages(current => [
+        ...current,
+        {
+          role: 'assistant',
+          content: response.answer
+        }
+      ])
+    } catch (error) {
+      console.error('Unable to get a response.', error)
+      showToast('Unable to get a response. Please try again.', 'error')
+      setMessage(text)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className='w-full space-y-8'>
+      {loadingProject ? (
+        <p className='text-muted-foreground'>Loading project...</p>
+      ) : project ? (
+        <>
+          <ProjectHeader project={project} />
+
+          <div className='mt-6 flex w-full rounded-xl border'>
+            <ProjectSidebar projectId={id} />
+
+            <div className='flex-1 p-6'>
+              <NeuraChat
+                messages={messages}
+                message={message}
+                loading={loading}
+                loadingHistory={loadingHistory}
+                username={user?.username}
+                setMessage={setMessage}
+                handleSubmit={handleSubmit}
+                messagesEndRef={messagesEndRef}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <p className='text-destructive'>Project not found.</p>
+      )}
+    </div>
+  )
+}

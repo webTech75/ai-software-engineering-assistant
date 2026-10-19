@@ -169,19 +169,6 @@ def scan_project_endpoint(
     )
 
 
-@router.get("/{project_id}/files")
-def list_project_files(
-    project_id: int,
-    current_user: User = Depends(get_current_user),
-    service: ProjectService = Depends(get_project_service),
-):
-    project = service.get_project(project_id, current_user)
-
-    tool = ListFilesTool()
-
-    return tool.execute(project)
-
-
 @router.get("/{project_id}/file")
 def read_project_file(
     project_id: int,
@@ -275,31 +262,6 @@ def search_project(
 #         "files_indexed": len(files)
 #     }
 
-@router.delete("/{project_id}/cleanup-index")
-def cleanup_project_index(
-    project_id: int,
-    db: Session = Depends(get_db),
-):
-    project = (
-        db.query(Project)
-        .filter(Project.id == project_id)
-        .first()
-    )
-
-    if not project:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
-        )
-
-    service = ProjectIndexService(db)
-
-    service.cleanup(project_id)
-
-    return {
-        "message": "Project index cleaned successfully",
-        "project_id": project_id,
-    }
 
 @router.post("/{project_id}/reindex")
 def reindex_project(

@@ -1,17 +1,17 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from 'react-router-dom'
 
-import { storage } from "@/features/auth/auth";
+import { storage } from '@/components/auth/auth'
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const token = storage.getToken();
+export function ProtectedRoute ({ children }: ProtectedRouteProps) {
+  const token = storage.getToken()
 
   if (!token) {
-    return <Navigate to="/" replace />;
+    return <Navigate to='/' replace />
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }

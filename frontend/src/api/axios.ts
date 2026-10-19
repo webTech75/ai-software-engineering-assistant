@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { storage, logout } from '@/features/auth/auth'
+import { storage, logout } from '@/components/auth/auth'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL
@@ -25,7 +25,7 @@ api.interceptors.response.use(
   },
 
   error => {
-    if (error.response?.status === 401 && !error.config.url.includes('/')) {
+    if (error.response?.status === 401) {
       logout()
 
       window.location.href = '/'

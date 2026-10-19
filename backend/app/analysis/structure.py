@@ -11,7 +11,6 @@ class StructureAnalyzer(BaseAnalyzer):
 
         root = Path(project_directory)
 
-        directories = []
         files = []
 
         for path in root.rglob("*"):
@@ -25,17 +24,13 @@ class StructureAnalyzer(BaseAnalyzer):
                 and path.suffix.lower() in IGNORED_EXTENSIONS
             ):
                 continue
-            
-            relative_path = str(path.relative_to(root))
 
-            if path.is_dir():
-                directories.append(relative_path)
-            else:
-                files.append(relative_path)
+
+            if path.is_file():
+                files.append(str(path.relative_to(root)))
 
         return {
             "structure": {
-                "directories": sorted(directories),
                 "files": sorted(files),
             }
         }

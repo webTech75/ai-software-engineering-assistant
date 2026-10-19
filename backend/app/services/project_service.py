@@ -31,7 +31,10 @@ from app.repositories.project_repository import ProjectRepository
 from app.schemas.project import ProjectCreate, ProjectUpdate
 from sqlalchemy.orm import Session
 from app.analysis.scanner import ProjectScanner
-from app.utils.file_storage import get_project_directory
+from app.utils.file_storage import (
+    get_project_directory,
+    get_existing_project_directory,
+)
 
 
 class ProjectService:
@@ -98,6 +101,7 @@ class ProjectService:
         self.remove_project_files(project)
         self.repository.delete(project)
 
+
     def update_project(
         self,
         project_id: int,
@@ -153,8 +157,8 @@ class ProjectService:
         project: Project,
     ) -> None:
 
-        project_dir = get_project_directory(project.id)
+        project_dir = get_existing_project_directory(project.id)
 
-        if Path(project_dir).exists():
+        if project_dir.exists():
             import shutil
             shutil.rmtree(project_dir)

@@ -4,11 +4,13 @@ export async function registerRequest (user: {
   username: string
   email: string
   password: string
+  registrationCode: string
 }) {
   const { data } = await api.post('/users/register', {
     username: user.username.trim().toLowerCase(),
     email: user.email.trim().toLowerCase(),
-    password: user.password
+    password: user.password,
+    registration_code: user.registrationCode
   })
 
   return data
@@ -37,6 +39,7 @@ export async function getCurrentUserRequest () {
   return data
 }
 
+// login body expect URLSearchParams
 export async function loginRequest (username: string, password: string) {
   const formData = new URLSearchParams()
 

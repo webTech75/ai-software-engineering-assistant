@@ -371,6 +371,21 @@
 .chat-loading {
     @apply text-muted-foreground italic;
 }
+.markdown {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.markdown code {
+  overflow-wrap: break-word;
+}
 
 .markdown {
     @apply prose max-w-none text-foreground;

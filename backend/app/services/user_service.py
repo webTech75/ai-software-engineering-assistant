@@ -45,6 +45,8 @@ class UserService:
     def __init__(self, db: Session):
         self.repository = UserRepository(db)
         self.password_reset_repository = PasswordResetTokenRepository(db)
+
+
     def create_user(self, data: UserCreate) -> User:
 
         username = data.username.strip().lower()
@@ -62,6 +64,12 @@ class UserService:
                 detail="Username already exists."
             )
 
+        if data.registration_code != settings.registration_code:
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid registration code."
+            )
+
         password_hash = hash_password(data.password)
 
         user = User(
@@ -71,6 +79,7 @@ class UserService:
         )
 
         return self.repository.create(user)
+
 
     def login(self, username: str, password: str) -> TokenResponse:
 

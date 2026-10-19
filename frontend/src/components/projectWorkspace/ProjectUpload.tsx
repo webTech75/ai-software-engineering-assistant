@@ -1,0 +1,44 @@
+import { Upload } from 'lucide-react'
+
+import { uploadProjectRequest } from '@/api/requests'
+import { useAuth } from '../auth/AuthContext'
+
+interface ProjectUploadProps {
+  projectId: number
+  onSuccess: () => void
+}
+
+export default function ProjectUpload ({
+  projectId,
+  onSuccess
+}: ProjectUploadProps) {
+  const { showLoader, hideLoader, showToast } = useAuth()
+
+  async function handleUpload (event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+
+    if (!file) return
+
+    try {
+      showLoader('Uploading in progress...')
+      await uploadProjectRequest(projectId, file)
+      onSuccess()
+      showToast('Project uploaded successfully.', 'success')
+    } catch (error: any) {
+      console.log('Upload failed:', error)
+      showToast('Upload failed. Please try again.', 'error')
+    } finally {
+      hideLoader()
+    }
+  }
+
+  return (
+    <div className='space-y-2'>
+      <label className='flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted'>
+        <Upload className='h-4 w-4' />
+        Upload Project
+        <input type='file' accept='.zip' hidden onChange={handleUpload} />
+      </label>
+    </div>
+  )
+}

@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from './AuthContext'
 import { registerRequest } from '@/api/authReq'
 
 import { login } from './auth'
@@ -14,16 +14,15 @@ type LoginFormProps = {
 
 export function LoginForm ({ mode, setMode }: LoginFormProps) {
   const navigate = useNavigate()
-  const { refreshUser } = useAuth()
+  const { refreshUser, showLoader, hideLoader, showToast, loading } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [email, setEmail] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [success, setSuccess] = useState('')
+  const [registrationCode, setRegistrationCode] = useState('')
 
-  async function handleSubmit (event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit (event: FormEvent) {
     event.preventDefault()
 
     setError('')
@@ -92,6 +91,11 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
         setError('Passwords do not match.')
         return
       }
+
+      if (!registrationCode.trim()) {
+        setError('Registration Code is required.')
+        return
+      }
     }
 
     if (mode === 'forgot') {
@@ -99,7 +103,7 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
     }
 
     try {
-      setLoading(true)
+      showLoader()
 
       if (mode === 'login') {
         await login(username, password)
@@ -108,25 +112,22 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
         setPassword('')
         navigate('/dashboard', { replace: true })
       } else {
-        await registerRequest({ username, email, password })
-        setSuccess('Account created successfully. Please sign in.')
+        await registerRequest({ username, email, password, registrationCode })
+        showToast('Account created successfully. Please sign in.', 'success')
         setPassword('')
         setUsername('')
         setEmail('')
         setConfirmPassword('')
-        setTimeout(() => {
-          setMode('login')
-        }, 4000)
+        setRegistrationCode('')
+        setMode('login')
       }
-    } catch (err) {
-      console.error(err)
-      setError(
-        mode === 'login'
-          ? 'Invalid username or password.'
-          : 'Unable to create account.'
-      )
+    } catch (err: any) {
+      console.log('login or create account error:', err)
+      mode === 'login'
+        ? showToast('Invalid username or password.', 'error')
+        : showToast('Unable to create account.', 'error')
     } finally {
-      setLoading(false)
+      hideLoader()
     }
   }
 
@@ -148,7 +149,6 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
             onChange={e => {
               setUsername(e.target.value)
               setError('')
-              setSuccess('')
             }}
             className='w-full px-3 py-2 outline-none focus:border-primary'
           />
@@ -190,38 +190,49 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
           />
         </div>
         {mode === 'register' && (
-          <div>
-            <label
-              htmlFor='confirmPassword'
-              className='mb-2 block text-sm font-medium'
-            >
-              Confirm Password
-            </label>
+          <>
+            <div>
+              <label
+                htmlFor='confirmPassword'
+                className='mb-2 block text-sm font-medium'
+              >
+                Confirm Password
+              </label>
 
-            <input
-              id='confirmPassword'
-              type='password'
-              autoComplete='new-password'
-              value={confirmPassword}
-              onChange={e => {
-                setConfirmPassword(e.target.value)
-                setError('')
-              }}
-              className='w-full px-3 py-2 outline-none focus:border-primary'
-            />
-          </div>
+              <input
+                id='confirmPassword'
+                type='password'
+                autoComplete='new-password'
+                value={confirmPassword}
+                onChange={e => {
+                  setConfirmPassword(e.target.value)
+                  setError('')
+                }}
+                className='w-full px-3 py-2 outline-none focus:border-primary'
+              />
+            </div>
+            <div>
+              <label
+                htmlFor='registrationCode'
+                className='mb-2 block text-sm font-medium'
+              >
+                Registration Code
+              </label>
+              <input
+                id='registrationCode'
+                type='password'
+                value={registrationCode}
+                onChange={e => {
+                  setRegistrationCode(e.target.value)
+                  setError('')
+                }}
+                className='w-full px-3 py-2 outline-none focus:border-primary'
+              />
+            </div>
+          </>
         )}
 
-        {success && (
-          <p className='text-sm text-green-600' role='status'>
-            {success}
-          </p>
-        )}
-        {error && (
-          <p className='text-sm text-destructive' role='alert'>
-            {error}
-          </p>
-        )}
+        {error && <p className='text-sm text-red-500'>{error}</p>}
 
         <button
           type='submit'

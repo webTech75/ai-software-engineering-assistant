@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-
+import { useState } from 'react'
+import { useAuth } from './AuthContext'
 import { forgotPasswordRequest } from '@/api/authReq'
 
 type ForgotPasswordProps = {
@@ -7,16 +7,14 @@ type ForgotPasswordProps = {
 }
 
 export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
+  const { showLoader, hideLoader, showToast, loading } = useAuth()
   const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
-  async function handleSubmit (event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit (event: FormEvent) {
     event.preventDefault()
 
     if (error) setError('')
-    if (success) setSuccess('')
 
     if (!email.trim()) {
       setError('Email is required.')
@@ -31,23 +29,19 @@ export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
     }
 
     try {
-      setLoading(true)
-
+      showLoader()
       await forgotPasswordRequest(email)
-      setError('')
-      setSuccess('If an account exists, a password reset link has been sent.')
-
+      showToast(
+        'If an account exists, a password reset link has been sent.',
+        'info'
+      )
       setEmail('')
-
-      setSuccess('If an account exists, a password reset link will be sent.')
-
       setEmail('')
     } catch (err) {
       console.error(err)
-
-      setError('Unable to process your request.')
+      showToast('Unable to process your request.', 'error')
     } finally {
-      setLoading(false)
+      hideLoader(false)
     }
   }
 
@@ -66,8 +60,7 @@ export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
             value={email}
             onChange={e => {
               setEmail(e.target.value)
-              if (success) setSuccess('')
-              if (error) setError('')
+              setError('')
             }}
             className='w-full px-3 py-2 outline-none focus:border-primary'
           />
@@ -76,12 +69,6 @@ export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
         {error && (
           <p className='text-sm text-destructive' role='alert'>
             {error}
-          </p>
-        )}
-
-        {success && (
-          <p className='text-sm text-green-600' role='status'>
-            {success}
           </p>
         )}
 

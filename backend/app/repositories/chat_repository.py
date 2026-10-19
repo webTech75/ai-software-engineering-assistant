@@ -18,14 +18,13 @@ class ChatRepository:
         messages = (
             self.db.query(ChatMessage)
             .filter(ChatMessage.project_id == project_id)
-            .order_by(ChatMessage.created_at.desc())
+            .order_by(
+                ChatMessage.created_at.desc(),
+                ChatMessage.id.desc()
+            )
             .limit(12)
             .all()
         )
+        messages.reverse()
 
-        messages = list(reversed(messages))
-
-        while messages and messages[0].role != "user":
-            messages.pop(0)
-
-        return messages[-12:]
+        return messages
