@@ -8,6 +8,7 @@ Description:
 
 Responsibilities:
     - Send prompts to the language model.
+    - Always apply the global system prompt.
     - Return generated responses.
 
 Does NOT:
@@ -23,6 +24,8 @@ Does NOT:
 from openai import OpenAI
 
 from app.core.config import settings
+from app.agent.prompts.system_prompt import SYSTEM_PROMPT
+
 
 
 class LLMClient:
@@ -47,37 +50,26 @@ class LLMClient:
         """
         Generate response from LLM.
 
-        max_tokens is selected by Agent based on task type.
+        The system prompt is automatically applied
+        to every request.
 
-        Examples:
-
-            general question
-                -> settings.llm_max_tokens
-
-            explanation
-                -> settings.llm_explain_max_tokens
-
-            review
-                -> settings.llm_review_max_tokens
+        Token limits are selected by Agent.
         """
 
 
         try:
 
-            # -----------------------------------------------------
-            # Safety fallback
-            #
-            # If caller does not provide token limit,
-            # use default environment setting.
-            # -----------------------------------------------------
-
             if max_tokens is None:
 
                 max_tokens = settings.llm_max_tokens
 
+
+
             print(
                 f"LLM request | model={settings.LLM_MODEL} | max_tokens={max_tokens}"
             )
+
+
 
             response = self.client.chat.completions.create(
 
@@ -89,11 +81,7 @@ class LLMClient:
 
                     {
                         "role": "system",
-                        "content": (
-                            "You are an AI software engineering assistant. "
-                            "Help users understand, analyze, "
-                            "and improve software projects."
-                        ),
+                        "content": SYSTEM_PROMPT,
                     },
 
                     {

@@ -8,16 +8,26 @@ Description:
 
 Responsibilities:
     - Receive user messages.
-    - Load project information.
-    - Load limited conversation history.
-    - Send request to Agent.
+    - Support general AI conversations.
+    - Support optional project context.
+    - Load conversation history.
+    - Execute AI agent.
     - Save messages.
-    - Return agent response.
+    - Return response.
 
-Notes:
-    - The Agent does not receive database models.
-    - Only project filesystem information is passed
-      when tools require file access.
+Architecture:
+
+    User
+      |
+      v
+    Chat API
+      |
+      +----------------+
+      |                |
+ General Chat     Project Chat
+      |                |
+      v                v
+    LLM          Project Tools
 
 ===============================================================================
 """
@@ -29,7 +39,11 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.project import Project
-from app.schemas.chat import ChatRequest, ChatResponse
+
+from app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+)
 
 from app.ai.llm.client import LLMClient
 
@@ -52,7 +66,7 @@ router = APIRouter(
 
 def get_agent() -> Agent:
     """
-    Create Agent instance with dependencies.
+    Create AI agent.
     """
 
     return Agent(
@@ -64,47 +78,74 @@ def get_agent() -> Agent:
 
 
 @router.post(
-    "/{project_id}",
+    "",
     response_model=ChatResponse,
 )
 def chat(
-    project_id: int,
     request: ChatRequest,
     db: Session = Depends(get_db),
 ):
     """
-    Send a message to the AI software engineering agent.
+    Send message to Neura.
+
+    Supports:
+
+    General:
+
+        {
+            "message": "Explain FastAPI"
+        }
+
+
+    Project:
+
+        {
+            "message": "Review main.py",
+            "project_id": 1
+        }
+
     """
 
     chat_service = ChatService(db)
 
+    project_directory = None
+
+
     # -------------------------------------------------
-    # Load project
+    # Load project only when provided
     # -------------------------------------------------
 
-    project = (
-        db.query(Project)
-        .filter(Project.id == project_id)
-        .first()
-    )
+    if request.project_id is not None:
 
-    if not project:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
+        project = (
+            db.query(Project)
+            .filter(
+                Project.id == request.project_id
+            )
+            .first()
+        )
+
+
+        if not project:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Project not found",
+            )
+
+
+        project_directory = (
+            project.project_directory
         )
 
 
     # -------------------------------------------------
-    # Load previous conversation history
+    # Load conversation history
     # -------------------------------------------------
 
     history_messages = chat_service.get_messages(
-        project_id
+        project_id=request.project_id
     )
-
-    # Keep only recent messages
-    history_messages = history_messages[12:]
 
 
     history = [
@@ -117,22 +158,31 @@ def chat(
 
 
     logger.info(
-        "Conversation history loaded: %s messages",
+        "History loaded: %s messages",
         len(history),
     )
 
 
     # -------------------------------------------------
-    # Run AI agent
+    # Run Agent
     # -------------------------------------------------
 
     agent = get_agent()
 
+
     response = agent.run(
-        project_directory=project.project_directory,
         message=request.message,
+        project_directory=project_directory,
         history=history,
     )
+
+
+    if not response:
+
+        response = (
+            "I was unable to generate a response. "
+            "Please try again."
+        )
 
 
     # -------------------------------------------------
@@ -140,66 +190,76 @@ def chat(
     # -------------------------------------------------
 
     chat_service.create_message(
-        project_id=project.id,
+        project_id=request.project_id,
         role="user",
         content=request.message,
     )
 
+
     chat_service.create_message(
-        project_id=project.id,
+        project_id=request.project_id,
         role="assistant",
         content=response,
     )
 
 
-    # -------------------------------------------------
-    # Return response
-    # -------------------------------------------------
-
     return ChatResponse(
         answer=response
     )
 
+
+
 @router.get(
-    "/{project_id}/history",
+    "/history",
 )
 def get_chat_history(
-    project_id: int,
+    project_id: int | None = None,
     db: Session = Depends(get_db),
 ):
     """
-    Get previous chat messages for a project.
+    Get chat history.
+
+    Without project_id:
+        Returns general chat.
+
+    With project_id:
+        Returns project conversation.
     """
 
     chat_service = ChatService(db)
 
+
     # -------------------------------------------------
-    # Verify project exists
+    # Validate project
     # -------------------------------------------------
 
-    project = (
-        db.query(Project)
-        .filter(Project.id == project_id)
-        .first()
-    )
+    if project_id is not None:
 
-    if not project:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
+        project = (
+            db.query(Project)
+            .filter(
+                Project.id == project_id
+            )
+            .first()
         )
+
+
+        if not project:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Project not found",
+            )
+
 
     # -------------------------------------------------
     # Load messages
     # -------------------------------------------------
 
     messages = chat_service.get_messages(
-        project_id
+        project_id=project_id
     )
 
-    # -------------------------------------------------
-    # Return clean response
-    # -------------------------------------------------
 
     return [
         {

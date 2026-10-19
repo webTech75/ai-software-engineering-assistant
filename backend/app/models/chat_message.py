@@ -1,17 +1,38 @@
 """
-Stores chat messages associated with a project.
+Stores chat messages.
+
+Supports:
+
+    - General Neura conversations
+    - Project-specific conversations
 """
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
+
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.db.database import Base
 
 
+
 class ChatMessage(Base):
+
     __tablename__ = "chat_messages"
+
+
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -19,21 +40,32 @@ class ChatMessage(Base):
         index=True,
     )
 
-    project_id: Mapped[int] = mapped_column(
-        ForeignKey("projects.id", ondelete="CASCADE"),
-        nullable=False,
+
+
+    project_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "projects.id",
+            ondelete="CASCADE",
+        ),
+        nullable=True,
         index=True,
     )
+
+
 
     role: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
     )
 
+
+
     content: Mapped[str] = mapped_column(
         Text,
         nullable=False,
     )
+
+
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -41,7 +73,9 @@ class ChatMessage(Base):
         nullable=False,
     )
 
+
+
     project = relationship(
         "Project",
-        back_populates="messages"
+        back_populates="messages",
     )

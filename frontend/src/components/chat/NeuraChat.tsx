@@ -89,12 +89,11 @@ export function NeuraChat ({
           Your message
         </label>
 
-        <textarea
+        <input
           id='chat-message'
           value={message}
           onChange={event => setMessage(event.target.value)}
           placeholder='Example: Help me design a REST API using FastAPI...'
-          rows={4}
           disabled={loading}
           className='w-full rounded-lg border bg-background p-3 text-foreground outline-none focus:ring-2 focus:ring-ring'
         />

@@ -1,16 +1,16 @@
 """
 ===============================================================================
-File: agent.py
-Path: app/agent/agent.py
+File:
+    app/agent/agent.py
 
 Description:
     Main AI agent orchestrator.
 
 Responsibilities:
-    - Coordinate the agent workflow.
-    - Create execution plans.
-    - Execute tools.
-    - Build final responses.
+    - Coordinate planner workflow.
+    - Execute project tools when required.
+    - Build LLM context.
+    - Generate final responses.
 
 Does NOT:
     - Access files directly.
@@ -30,8 +30,34 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-
 class Agent:
+    """
+    Main AI assistant orchestrator.
+
+    Flow:
+
+        User Message
+              |
+              v
+           Planner
+              |
+              v
+     General or Project?
+              |
+        +-----+------+
+        |            |
+     General      Project
+        |            |
+        |         Executor
+        |            |
+        +-----+------+
+              |
+              v
+             LLM
+              |
+              v
+       Response Builder
+    """
 
     def __init__(
         self,
@@ -40,68 +66,33 @@ class Agent:
         response_builder,
         llm,
     ):
-        """
-        Initialize agent components.
-        """
-
         self.planner = planner
         self.executor = executor
         self.response_builder = response_builder
         self.llm = llm
 
 
-
     def run(
         self,
-        project_directory,
         message: str,
+        project_directory: str | None = None,
         history: list[dict] | None = None,
     ) -> str:
-        """
-        Execute the agent workflow.
-
-        Workflow:
-
-            User message
-                  |
-                  v
-              Planner
-                  |
-                  v
-              Executor
-                  |
-                  v
-             LLM response
-                  |
-                  v
-          Response builder
-        """
-
-
 
         # ---------------------------------------------------------
         # Create execution plan
         # ---------------------------------------------------------
 
         plan = self.planner.create_plan(
-            message,
+            message
         )
-
-        print("================ PLAN ================")
-        print(plan)
-        print("======================================")
 
 
         if plan is None:
-
             plan = {
-
                 "goal": message,
-
                 "task_type": "general",
-
                 "actions": [],
-
             }
 
 
@@ -111,30 +102,44 @@ class Agent:
         )
 
 
-
         # ---------------------------------------------------------
-        # Execute tools
-        #
-        # General questions return no actions.
-        #
-        # Executor should simply return empty results.
+        # Execute tools only for project tasks
         # ---------------------------------------------------------
 
-        execution_results = self.executor.execute(
-            plan,
-            project_directory,
-        )
+        execution_results = []
+
+
+        if (
+            plan.get("task_type")
+            in [
+                "project",
+                "review",
+                "search",
+                "write",
+                "edit",
+                "delete",
+                "explain",
+                "bug_analysis",
+                "security_review",
+                "quality_review",
+            ]
+            and project_directory
+        ):
+
+            execution_results = self.executor.execute(
+                plan,
+                project_directory,
+            )
 
 
         logger.info(
-            "Execution results: %s",
+            "Tool results: %s",
             execution_results,
         )
 
 
-
         # ---------------------------------------------------------
-        # Build conversation context
+        # Build conversation history
         # ---------------------------------------------------------
 
         conversation = ""
@@ -146,13 +151,12 @@ class Agent:
 
                 conversation += (
                     f"{item['role']}: "
-                    f"{item['content'][:300]}\n"
+                    f"{item['content'][:500]}\n"
                 )
 
 
-
         # ---------------------------------------------------------
-        # Select token limit
+        # Token selection
         # ---------------------------------------------------------
 
         task_type = plan.get(
@@ -166,119 +170,58 @@ class Agent:
         )
 
 
-        logger.info(
-            "LLM task type: %s | max_tokens: %s",
-            task_type,
-            max_tokens,
-        )
-
-
-
         # ---------------------------------------------------------
-        # Generate LLM response
+        # Ask LLM
         # ---------------------------------------------------------
 
         llm_answer = self.llm.generate(
-            f"""
-            You are a software engineering assistant.
-
+            prompt=f"""
             Conversation:
+
             {conversation}
 
+
             User request:
+
             {message}
 
+
             Tool results:
+
             {execution_results}
-
-            Answer the user using the tool results when available.
-
-            If no tool results are available,
-            answer normally using your software engineering knowledge.
             """,
-
-            max_tokens=max_tokens,
+                max_tokens=max_tokens,
         )
 
 
-
         # ---------------------------------------------------------
-        # Build final response
+        # Build response
         # ---------------------------------------------------------
 
-        response = self.response_builder.build(
+        return self.response_builder.build(
             execution_results,
             llm_answer,
         )
-
-
-        return response
-
 
 
     def get_max_tokens(
         self,
         task_type: str,
     ) -> int:
-        """
-        Select LLM token limit based on task type.
-
-        Values come from environment variables
-        through application settings.
-
-        No hardcoded token numbers here.
-        """
-
-
-
-        # ---------------------------------------------------------
-        # Explanation tasks
-        #
-        # Example:
-        #
-        #   explain project_service.py
-        #
-        # ---------------------------------------------------------
 
         if task_type == "explain":
 
             return settings.llm_explain_max_tokens
 
 
-
-        # ---------------------------------------------------------
-        # Review tasks
-        #
-        # Example:
-        #
-        #   find bugs in auth.py
-        #
-        # ---------------------------------------------------------
-
         if task_type in [
-
             "review",
-
             "bug_analysis",
-
             "security_review",
-
             "quality_review",
-
         ]:
 
             return settings.llm_review_max_tokens
 
 
-
-        # ---------------------------------------------------------
-        # Default
-        #
-        # General questions:
-        #
-        #   what is FastAPI?
-        #
-        # ---------------------------------------------------------
-
         return settings.llm_max_tokens
-    

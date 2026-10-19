@@ -115,15 +115,16 @@ export async function sendChatMessageRequest (
   projectId: number,
   message: string
 ) {
-  const { data } = await api.post(`/chat/${projectId}`, {
-    message
+  const { data } = await api.post(`/chat`, {
+    message,
+    project_id: projectId
   })
 
   return data
 }
 
 export async function getChatHistoryRequest (projectId: number) {
-  const { data } = await api.get(`/chat/${projectId}/history`)
+  const { data } = await api.get(`/chat/history?project_id=${projectId}`)
 
   return data
 }
