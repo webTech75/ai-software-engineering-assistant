@@ -10,10 +10,11 @@ import {
 import { useAuth } from '@/components/auth/AuthContext'
 
 import { ProjectHeader } from '@/components/projectWorkspace/ProjectHeader'
-import { NeuraChat } from '@/components/chat/NeuraChat'
+import { NeuraChat } from '@/components/projectWorkspace/chat/NeuraChat'
 import type { Project } from '@/types/project'
 import type { ChatMessage } from '@/types/chat'
 import { ProjectSidebar } from '@/components/projectWorkspace/ProjectSidebar'
+import { ProjectAnalysis } from './ProjectAnalysis'
 
 export function Project () {
   const { projectId } = useParams<{ projectId: string }>()
@@ -128,7 +129,7 @@ export function Project () {
       ) : project ? (
         <>
           <ProjectHeader project={project} />
-
+          <ProjectAnalysis projectId={id} />
           <div className='mt-6 flex w-full min-w-0 rounded-xl border'>
             <ProjectSidebar projectId={id} />
 

@@ -17,7 +17,10 @@ export default function ProjectUpload ({
   async function handleUpload (event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
 
-    if (!file) return
+    if (!file || !file.name.endsWith('.zip')) {
+      showToast('Only ZIP files are supported.', 'error')
+      return
+    }
 
     try {
       showLoader('Uploading in progress...')

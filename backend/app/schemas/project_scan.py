@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Any
 
 class StatisticsResponse(BaseModel):
     total_files: int
@@ -27,4 +27,8 @@ class ProjectScanResponse(BaseModel):
     statistics: StatisticsResponse
     technology: TechnologyResponse
     structure: StructureResponse
-    # dependencies: DependencyResponse
+    dependencies: dict[str, Any] = {}
+    api: dict[str, Any] = {}
+    database: dict[str, Any] = {}
+    metrics: dict[str, Any] = {}
+    complexity: dict[str, Any] = {}

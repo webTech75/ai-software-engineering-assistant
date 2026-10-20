@@ -1,11 +1,9 @@
-// import { useEffect, useState } from 'react'
-import { scanProjectRequest } from '@/api/requests'
-// import type { ProjectScan } from '@/types/projectScan'
+import { useProjectScan } from '@/hooks/useProjectScan'
 import { buildFileTree } from '@/utils/buildFileTree'
 import FileTree from './FileTree'
 import ProjectUpload from './ProjectUpload'
 import { Folder } from 'lucide-react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface ProjectFilesProps {
   projectId: number
@@ -32,10 +30,7 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
   //   }
   // }
 
-  const { data: scan, isLoading } = useQuery({
-    queryKey: ['project-files', projectId],
-    queryFn: () => scanProjectRequest(projectId)
-  })
+  const { data: scan, isLoading } = useProjectScan(projectId)
   const queryClient = useQueryClient()
 
   const hiddenFiles = [
@@ -52,7 +47,7 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
     const filename = file.split('/').pop()
     return !hiddenFiles.includes(filename || '')
   })
-
+  console.log('scan>>>>>', scan)
   return (
     <>
       <h2 className='mb-4 font-semibold'>Project Files</h2>
@@ -61,7 +56,7 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
           projectId={projectId}
           onSuccess={() =>
             queryClient.invalidateQueries({
-              queryKey: ['project-files', projectId]
+              queryKey: ['project-scan', projectId]
             })
           }
         />
