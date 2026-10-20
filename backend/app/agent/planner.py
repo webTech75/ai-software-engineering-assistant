@@ -657,7 +657,7 @@ class Planner:
                 {
                     "tool": "read_file",
                     "parameters": {
-                        "path": "{{search_text.path}}",
+                        "path": "{{search_text.file}}",
                     },
                 },
             ]
@@ -872,8 +872,23 @@ class Planner:
     ) -> str:
         """
         Extract filename from request.
+
+        Supports:
+            main.py
+            package.json
+            LICENSE
+            README
+            Dockerfile
         """
 
+        known_files = (
+            "license",
+            "readme",
+            "dockerfile",
+            "makefile",
+            "procfile",
+            ".env",
+        )
 
         extensions = (
             ".py",
@@ -889,23 +904,31 @@ class Planner:
             ".json",
             ".yaml",
             ".yml",
+            ".toml",
         )
+
+        common_files = (
+    "license",
+    "readme",
+    "dockerfile",
+    "makefile",
+    ".gitignore",
+    ".env",
+    "procfile",
+)
 
 
         for word in request.split():
 
-            cleaned = word.rstrip(
-                ").,:'\""
-            )
+            cleaned = word.rstrip(").,:'\"")
 
-            if cleaned.endswith(
-                extensions
-            ):
+            lower_word = cleaned.lower()
 
+            if cleaned.endswith(extensions):
                 return cleaned
 
-
-        return ""
+            if lower_word in common_files:
+                return cleaned
 
 
 

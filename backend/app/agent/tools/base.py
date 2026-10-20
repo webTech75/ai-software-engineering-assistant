@@ -22,9 +22,9 @@ Architecture:
         ▲          ▲          ▲
         └──────────┼──────────┘
                    ▼
-              Tool Registry
+             Tool Registry
                    ▼
-              Agent Service
+                 Agent
 
 Every tool must provide:
 
@@ -35,61 +35,110 @@ Every tool must provide:
         Natural language description shown to the LLM.
 
     • schema
-        JSON schema defining the tool parameters.
+        JSON schema defining tool parameters.
 
     • execute()
         Business logic executed by the application.
 
-Execution Flow
+Execution Flow:
 
-        LLM
-         │
-         ▼
+        Agent
+          |
+          v
    Tool Registry
-         │
-         ▼
-    BaseTool API
-         │
-         ▼
- Specific Tool
-         │
-         ▼
- Project Filesystem
+          |
+          v
+     BaseTool API
+          |
+          v
+   Specific Tool
+          |
+          v
+   Project Filesystem
 
 Dependencies:
     - abc
-    - Project model
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
+
 from abc import ABC, abstractmethod
 
 
 class BaseTool(ABC):
+    """
+    Abstract interface for all AI tools.
+
+    Every tool must implement:
+
+        name
+        description
+        schema
+        execute()
+    """
+
 
     @property
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
+        """
+        Unique tool identifier.
+
+        Example:
+
+            read_file
+        """
+
         pass
+
 
 
     @property
     @abstractmethod
-    def description(self):
+    def description(self) -> str:
+        """
+        Description displayed to the LLM.
+        """
+
         pass
 
 
+
+    @property
     @abstractmethod
-    def schema(self):
+    def schema(self) -> dict:
+        """
+        JSON schema for tool parameters.
+
+        Used for future LLM function calling.
+        """
+
         pass
+
 
 
     @abstractmethod
     def execute(
         self,
         project_directory: str,
-        **kwargs
-    ):
+        **kwargs,
+    ) -> dict:
+        """
+        Execute the tool.
+
+        Args:
+
+            project_directory:
+                Root directory of the project.
+
+            kwargs:
+                Tool-specific parameters.
+
+        Returns:
+
+            Dictionary containing execution result.
+        """
+
         pass

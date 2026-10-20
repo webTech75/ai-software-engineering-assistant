@@ -115,12 +115,21 @@ export async function sendChatMessageRequest (
   projectId: number,
   message: string
 ) {
-  const { data } = await api.post(`/chat`, {
-    message,
-    project_id: projectId
-  })
+  try {
+    const { data } = await api.post(`/chat`, {
+      message,
+      project_id: projectId
+    })
+    return data
+  } catch (error: any) {
+    if (error.code === 'ECONNABORTED') {
+      return {
+        answer: 'Neura took too long to respond. Please try again.'
+      }
+    }
 
-  return data
+    throw error
+  }
 }
 
 export async function getChatHistoryRequest (projectId: number) {

@@ -9,7 +9,7 @@ Description:
 Responsibilities:
     - Receive execution plans.
     - Select tools from ToolRegistry.
-    - Provide tool execution context.
+    - Provide execution context.
     - Collect tool results.
 
 Does NOT:
@@ -25,10 +25,13 @@ Author:
 
 import logging
 
+from app.file_system.file_manager import FileManager
+
 from app.agent.tool_registry import ToolRegistry
 
 
 logger = logging.getLogger(__name__)
+
 
 
 class Executor:
@@ -36,9 +39,33 @@ class Executor:
     Executes tools selected by the Planner.
     """
 
-    def __init__(self):
 
-        self.registry = ToolRegistry()
+    def __init__(
+        self,
+        registry: ToolRegistry | None = None,
+        file_manager: FileManager | None = None,
+    ):
+        """
+        Initialize executor.
+
+        Dependencies are injected so the
+        executor remains testable.
+        """
+
+        self.file_manager = (
+            file_manager
+            or FileManager()
+        )
+
+
+        self.registry = (
+            registry
+            or ToolRegistry(
+                self.file_manager
+            )
+        )
+
+
 
     def resolve_parameters(
         self,
@@ -46,21 +73,26 @@ class Executor:
         results: dict,
     ) -> dict:
         """
-        Replace references to previous tool results.
+        Resolve references from previous tools.
 
         Example:
-            {{search_text.path}}
+
+            {{search_text.file}}
 
         becomes:
 
-            app/services/project_service.py
+            app/main.py
         """
 
         resolved = {}
 
+
         for key, value in parameters.items():
 
-            if isinstance(value, str) and value.startswith("{{"):
+            if (
+                isinstance(value, str)
+                and value.startswith("{{")
+            ):
 
                 reference = (
                     value
@@ -68,56 +100,74 @@ class Executor:
                     .replace("}}", "")
                 )
 
+
                 parts = reference.split(".")
+
 
                 if len(parts) == 2:
 
-                    tool_name = parts[0]
-                    field = parts[1]
+                    tool_name, field = parts
 
-                    tool_result = results.get(
+
+                    previous = results.get(
                         tool_name
                     )
 
-                    if isinstance(tool_result, list):
-                        tool_result = tool_result[0]
 
-                    if isinstance(tool_result, dict):
-                        resolved[key] = tool_result.get(field)
+                    if isinstance(
+                        previous,
+                        dict,
+                    ):
+
+                        resolved[key] = (
+                            previous.get(field)
+                        )
 
                         continue
 
+
             resolved[key] = value
 
+
         return resolved
-        
+
+
+
     def execute(
         self,
         plan: dict,
         project_directory: str,
     ) -> dict:
         """
-        Execute the generated plan.
+        Execute planner actions.
 
-        Tools receive only the information
-        they need.
+        Returns:
 
-        Example:
-            project_directory
-            file path
-            search query
+        {
+            "tool_name": {
+                "success": True,
+                "data": ...
+            }
+        }
         """
 
-        results = {}
+        results: dict = {}
+
 
         if not plan:
-            return {}
+
+            return results
 
 
-        for action in plan.get(
+
+        actions = plan.get(
             "actions",
-            []
-        ):
+            [],
+        )
+
+
+
+        for action in actions:
 
             tool_name = action.get(
                 "tool"
@@ -126,8 +176,14 @@ class Executor:
 
             parameters = action.get(
                 "parameters",
-                {}
+                {},
             )
+
+
+            if not tool_name:
+
+                continue
+
 
 
             tool = self.registry.get(
@@ -138,55 +194,90 @@ class Executor:
             if not tool:
 
                 results[tool_name] = {
-                    "error": "Tool not found"
+                    "success": False,
+                    "error": "Tool not found",
                 }
 
                 continue
 
 
-            logger.info(
-                "Executing tool: %s",
-                tool_name,
-            )
-
 
             try:
 
-                if (
-                    "project_directory"
-                    not in parameters
+                logger.info(
+                    "Executing tool: %s",
+                    tool_name,
+                )
+
+
+                parameters = (
+                    self.resolve_parameters(
+                        parameters,
+                        results,
+                    )
+                )
+
+
+                # Inject project context
+                parameters.setdefault(
+                    "project_directory",
+                    project_directory,
+                )
+
+
+
+                if any(
+                    value is None
+                    for value in parameters.values()
                 ):
-                    parameters[
-                        "project_directory"
-                    ] = project_directory
+
+                    results[tool_name] = {
+                        "success": False,
+                        "error": (
+                            "Missing required "
+                            "tool parameter"
+                        ),
+                        "parameters": parameters,
+                    }
+
+                    continue
 
 
-                print("================ TOOL CALL ================")
-                print("TOOL:", tool_name)
-                print("ARGUMENTS:", parameters)
-                print("==========================================")
 
-                parameters = self.resolve_parameters(
+                logger.debug(
+                    "Tool arguments: %s",
                     parameters,
-                    results,
                 )
 
 
-                results[tool_name] = tool.execute(
-                    **parameters,
+                output = tool.execute(
+                    **parameters
                 )
+
+
+                results[tool_name] = {
+                    "success": True,
+                    "data": output,
+                }
+
 
 
             except Exception as error:
 
                 logger.exception(
-                    "Tool execution failed"
+                    "Tool failed: %s",
+                    tool_name,
                 )
 
+
                 results[tool_name] = {
+                    "success": False,
                     "error": str(error),
-                    "type": type(error).__name__,
+                    "type": (
+                        type(error).__name__
+                    ),
                 }
+
 
 
         return results

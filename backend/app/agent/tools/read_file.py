@@ -1,47 +1,43 @@
 """
 ===============================================================================
-File: read_file.py
-Path: app/agent/tools/read_file.py
+File:
+    app/agent/tools/read_file.py
 
 Description:
     Reads the contents of a project file.
 
 Responsibilities:
-    - Receive a requested file path.
+    - Expose file reading capability to the AI agent.
     - Delegate file access to FileManager.
-    - Return file contents to the AI.
+    - Return file contents.
 
-Notes:
-    - File security rules are handled by FileManager.
-    - Only files inside the project directory can be read.
+Does NOT:
+    - Access filesystem directly.
+    - Validate file security rules.
+    - Manage project objects.
+    - Perform AI reasoning.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
 
-
 from app.agent.tools.base import BaseTool
 from app.file_system.file_manager import FileManager
 
 
-
 class ReadFileTool(BaseTool):
+    """
+    Tool used by the agent to read project files.
 
+    Filesystem operations are handled by FileManager.
+    """
 
     def __init__(
         self,
-        file_manager: FileManager | None = None,
+        file_manager: FileManager,
     ):
-        """
-        Initialize tool with filesystem manager.
-        """
-
-        self.file_manager = (
-            file_manager
-            or FileManager()
-        )
-
+        self.file_manager = file_manager
 
 
     @property
@@ -49,18 +45,17 @@ class ReadFileTool(BaseTool):
         return "read_file"
 
 
-
     @property
     def description(self) -> str:
         return (
-            "Read the contents of a file. Use this tool "
-            "before answering questions about a file or before modifying it."
+            "Read the contents of a file. "
+            "Use this tool before answering questions "
+            "about a file or before modifying it."
         )
 
 
-
     @property
-    def schema(self):
+    def schema(self) -> dict:
         return {
             "type": "function",
             "function": {
@@ -72,29 +67,31 @@ class ReadFileTool(BaseTool):
                         "path": {
                             "type": "string",
                             "description": (
-                                "Relative path of the file to read."
-                            )
-                        }
+                                "Relative path of the file "
+                                "to read."
+                            ),
+                        },
                     },
-                    "required": ["path"],
+                    "required": [
+                        "path",
+                    ],
                     "additionalProperties": False,
                 },
             },
         }
 
 
-
     def execute(
         self,
         project_directory: str,
         path: str,
-        **kwargs
-    ) -> str:
+        **kwargs,
+    ):
         """
         Read file contents through FileManager.
         """
 
         return self.file_manager.read_file(
-            project_directory,
-            path,
+            project_directory=project_directory,
+            requested_path=path,
         )

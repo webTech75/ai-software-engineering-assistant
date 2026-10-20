@@ -129,10 +129,10 @@ export function Project () {
         <>
           <ProjectHeader project={project} />
 
-          <div className='mt-6 flex w-full rounded-xl border'>
+          <div className='mt-6 flex w-full min-w-0 rounded-xl border'>
             <ProjectSidebar projectId={id} />
 
-            <div className='flex-1 p-6'>
+            <div className='min-w-0 flex-1 p-6'>
               <NeuraChat
                 messages={messages}
                 message={message}

@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.models.chat_message import ChatMessage
 from app.repositories.chat_repository import ChatRepository
 
-
+MAX_CHAT_LENGTH = 10000
 
 class ChatService:
     """
@@ -55,7 +55,13 @@ class ChatService:
 
         project_id can be None for general conversations.
         """
+        #MAX_MESSAGE_LENGTH = 20000
 
+        if len(content) > MAX_CHAT_LENGTH:
+            content = (
+                content[:MAX_CHAT_LENGTH]
+                + "\n\n[Message truncated]"
+            )
 
         message = ChatMessage(
             project_id=project_id,

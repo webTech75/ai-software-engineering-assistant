@@ -1,16 +1,19 @@
 """
 ===============================================================================
-File: file_manager.py
-Path: app/file_system/file_manager.py
+File:
+    app/file_system/file_manager.py
 
 Description:
-    Central service for accessing uploaded project files. 
-    FileManager focused on file operations
+    Central service for accessing uploaded project files.
 
 Responsibilities:
     - Resolve project file paths.
     - Validate safe file access.
-    - Read file contents.
+    - Read files.
+    - Write files.
+    - Edit files.
+    - Delete files.
+    - Search project contents.
 
 Does NOT:
     - Know about database models.
@@ -22,7 +25,6 @@ Author:
 ===============================================================================
 """
 
-
 from pathlib import Path
 
 from app.file_system.file_policy import (
@@ -31,11 +33,74 @@ from app.file_system.file_policy import (
 )
 
 
-
 class FileManager:
     """
     Handles filesystem operations for uploaded projects.
+
+    All tools should use FileManager instead
+    of accessing the filesystem directly.
     """
+
+    IGNORE_DIRS = {
+        ".git",
+        ".venv",
+        "venv",
+        "env",
+        "__pycache__",
+        "node_modules",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".idea",
+        ".vscode",
+        "dist",
+        "build",
+        ".next",
+        ".cache",
+    }
+
+
+    def get_root(
+        self,
+        project_directory: str,
+    ) -> Path:
+        """
+        Return validated project root.
+        """
+
+        root = Path(
+            project_directory
+        ).resolve()
+
+
+        if not root.exists():
+
+            raise FileNotFoundError(
+                "Project directory does not exist."
+            )
+
+
+        return root
+
+
+
+    def is_safe_path(
+        self,
+        root: Path,
+        path: Path,
+    ) -> bool:
+        """
+        Prevent path traversal attacks.
+        """
+
+        try:
+
+            path.relative_to(root)
+
+            return True
+
+        except ValueError:
+
+            return False
 
 
 
@@ -45,36 +110,43 @@ class FileManager:
         requested_path: str,
     ) -> Path | list[Path]:
         """
-        Resolve a requested file inside a project directory.
+        Resolve requested file.
 
-        Returns:
-            Path:
-                When exactly one file is found.
+        Supports:
 
-            list[Path]:
-                When multiple files have the same name.
+            app/main.py
+
+        or:
+
+            main.py
 
         """
 
-        root = Path(project_directory).resolve()
+        root = self.get_root(
+            project_directory
+        )
 
-        if not root.exists():
-            raise FileNotFoundError(
-                "Project directory does not exist."
-            )
 
-        requested = Path(requested_path)
+        requested = Path(
+            requested_path
+        )
 
-        # Try exact path first
+
         direct_path = (
             root / requested
         ).resolve()
 
-        if direct_path.exists() and direct_path.is_file():
 
-            if not str(direct_path).startswith(
-                str(root)
+        if (
+            direct_path.exists()
+            and direct_path.is_file()
+        ):
+
+            if not self.is_safe_path(
+                root,
+                direct_path,
             ):
+
                 raise ValueError(
                     "Invalid file path."
                 )
@@ -82,101 +154,127 @@ class FileManager:
             return direct_path
 
 
-        # Search project files
+
         matches = []
 
-        ignore_dirs = {
-            ".git",
-            ".venv",
-            "venv",
-            "env",
-            "__pycache__",
-            "node_modules",
-        }
 
-
-        for file in root.rglob(requested_path):
+        for file in root.rglob("*"):
 
             if any(
-                part in ignore_dirs
+                part in self.IGNORE_DIRS
                 for part in file.parts
             ):
+
                 continue
 
-            if file.is_file():
+
+            if not file.is_file():
+
+                continue
+
+
+            if (
+                file.name.lower()
+                == requested_path.lower()
+            ):
 
                 resolved = file.resolve()
 
-                if not str(resolved).startswith(
-                    str(root)
-                ):
-                    continue
 
-                matches.append(resolved)
+                if self.is_safe_path(
+                    root,
+                    resolved,
+                ):
+
+                    matches.append(
+                        resolved
+                    )
+
 
 
         if not matches:
+
             raise FileNotFoundError(
                 requested_path
             )
 
+
         if len(matches) > 1:
+
             return sorted(matches)
 
 
         return matches[0]
-    
+
+
 
     def read_file(
         self,
         project_directory: str,
         requested_path: str,
     ):
-        """
-        Read a file from a project.
 
-        Returns:
-            File content if one file is found.
-            File list if multiple matches exist.
-        """
-
-        result = self.resolve_file(
+        file_path = self.resolve_file(
             project_directory,
             requested_path,
         )
 
 
-        if isinstance(result, list):
+        if isinstance(
+            file_path,
+            list,
+        ):
+
             return {
                 "status": "multiple_files",
-                "message": "Multiple files found. Please select one.",
+                "message":
+                    "Multiple files found.",
                 "files": [
-                    str(
-                        file.relative_to(
-                            Path(project_directory).resolve()
-                        )
-                    )
-                    for file in result
+                    str(path)
+                    for path in file_path
                 ],
             }
 
 
-        if not is_allowed_file(result):
+
+        if not is_allowed_file(
+            file_path
+        ):
+
             raise ValueError(
                 "File type is not supported."
             )
 
 
-        if not is_file_size_allowed(result):
+        if not is_file_size_allowed(
+            file_path
+        ):
+
             raise ValueError(
-                "File is too large to read."
+                "File too large."
             )
 
 
-        return result.read_text(
+        content = file_path.read_text(
             encoding="utf-8",
             errors="ignore",
         )
+
+
+        max_length = 50000
+
+
+        if len(content) > max_length:
+
+            return (
+                "File too large.\n\n"
+                f"Showing first {max_length} characters.\n\n"
+                f"{content[:max_length]}"
+            )
+
+
+        return content
+
 
 
     def list_files(
@@ -184,44 +282,12 @@ class FileManager:
         project_directory: str,
     ) -> list[str]:
         """
-        List all files inside a project directory.
-
-        Returns:
-            Relative file paths only.
-
-        Example:
-            [
-                "app/main.py",
-                "app/models/user.py"
-            ]
+        Return project files.
         """
 
-        root = Path(project_directory).resolve()
-
-
-        if not root.exists():
-            return []
-
-
-        ignore_dirs = {
-            ".git",
-            ".venv",
-            "venv",
-            "env",
-            "__pycache__",
-            "node_modules",
-            ".pytest_cache",
-            ".mypy_cache",
-            ".idea",
-            ".vscode",
-            "dist",
-            "build",
-            ".next",
-            ".cache",
-        }
-
-
-        max_files = 1000
+        root = self.get_root(
+            project_directory
+        )
 
 
         files = []
@@ -230,13 +296,15 @@ class FileManager:
         for file in root.rglob("*"):
 
             if any(
-                part in ignore_dirs
+                part in self.IGNORE_DIRS
                 for part in file.parts
             ):
+
                 continue
 
 
             if not file.is_file():
+
                 continue
 
 
@@ -247,11 +315,9 @@ class FileManager:
             )
 
 
-            if len(files) >= max_files:
-                break
+        return sorted(files[:1000])
 
 
-        return sorted(files)
 
     def write_file(
         self,
@@ -260,53 +326,58 @@ class FileManager:
         content: str,
         overwrite: bool = False,
     ) -> dict:
-        """
-        Create or update a project file.
 
-        Returns:
-            Status information.
-        """
+        root = self.get_root(
+            project_directory
+        )
 
-        root = Path(project_directory).resolve()
-
-        if not root.exists():
-            raise FileNotFoundError(
-                "Project directory does not exist."
-            )
 
         file_path = (
             root / requested_path
         ).resolve()
 
-        # Security check
-        if not str(file_path).startswith(
-            str(root)
+
+        if not self.is_safe_path(
+            root,
+            file_path,
         ):
+
             raise ValueError(
                 "Invalid file path."
             )
 
-        if file_path.exists() and not overwrite:
+
+
+        if (
+            file_path.exists()
+            and not overwrite
+        ):
+
             return {
                 "status": "already_exists",
                 "path": requested_path,
             }
+
+
 
         file_path.parent.mkdir(
             parents=True,
             exist_ok=True,
         )
 
+
         file_path.write_text(
             content,
             encoding="utf-8",
         )
 
+
         return {
             "status": "created",
             "path": requested_path,
         }
-    
+
+
 
     def edit_file(
         self,
@@ -315,65 +386,49 @@ class FileManager:
         old_text: str,
         new_text: str,
     ) -> dict:
-        """
-        Replace text inside an existing project file.
 
-        Returns:
-            Status information.
-        """
 
-        file_path = self.resolve_file(
+        content = self.read_file(
             project_directory,
             requested_path,
         )
 
-        # Multiple files found
-        if isinstance(file_path, list):
-            return {
-                "status": "multiple_files",
-                "message": "Multiple files found. Please select one.",
-                "files": [
-                    str(path)
-                    for path in file_path
-                ],
-            }
 
-        if not is_allowed_file(file_path):
-            raise ValueError(
-                "File type is not supported."
-            )
+        if isinstance(content, dict):
 
-        if not is_file_size_allowed(file_path):
-            raise ValueError(
-                "File is too large to edit."
-            )
+            return content
 
-        content = file_path.read_text(
-            encoding="utf-8",
-            errors="ignore",
-        )
+
 
         if old_text not in content:
+
             return {
                 "status": "text_not_found",
                 "path": requested_path,
             }
 
-        updated_content = content.replace(
+
+
+        updated = content.replace(
             old_text,
             new_text,
         )
 
-        file_path.write_text(
-            updated_content,
-            encoding="utf-8",
+
+        self.write_file(
+            project_directory,
+            requested_path,
+            updated,
+            overwrite=True,
         )
+
 
         return {
             "status": "updated",
             "path": requested_path,
         }
-    
+
+
 
     def delete_file(
         self,
@@ -381,70 +436,70 @@ class FileManager:
         requested_path: str,
     ) -> dict:
 
+
         try:
-            result = self.resolve_file(
+
+            file_path = self.resolve_file(
                 project_directory,
                 requested_path,
             )
 
         except FileNotFoundError:
+
             return {
                 "status": "not_found",
                 "path": requested_path,
             }
 
-        if isinstance(result, list):
+
+
+        if isinstance(
+            file_path,
+            list,
+        ):
+
             return {
                 "status": "multiple_files",
-                "message": "Multiple files found. Please select one.",
                 "files": [
-                    str(
-                        file.relative_to(
-                            Path(project_directory).resolve()
-                        )
-                    )
-                    for file in result
+                    str(path)
+                    for path in file_path
                 ],
             }
 
-        result.unlink()
+
+
+        file_path.unlink()
+
 
         return {
             "status": "deleted",
             "path": requested_path,
         }
-    
+
+
 
     def search_text(
         self,
         project_directory: str,
         query: str,
     ) -> list[dict]:
-        """
-        Search for text in all project files.
 
-        Returns:
-            A list of matches containing the file path,
-            line number, and matching line.
-        """
+        root = self.get_root(
+            project_directory
+        )
 
-        root = Path(project_directory).resolve()
-
-        if not root.exists():
-            return []
 
         results = []
 
-        for relative_path in self.list_files(project_directory):
+
+        for relative in self.list_files(
+            project_directory
+        ):
+
+            file_path = root / relative
+
 
             try:
-                file_path = root / relative_path
-
-                if not is_allowed_file(file_path):
-                    continue
-
-                if not is_file_size_allowed(file_path):
-                    continue
 
                 with file_path.open(
                     "r",
@@ -452,43 +507,55 @@ class FileManager:
                     errors="ignore",
                 ) as file:
 
-                    for line_number, line in enumerate(file, start=1):
+
+                    for number, line in enumerate(
+                        file,
+                        start=1,
+                    ):
 
                         if query.lower() in line.lower():
 
                             results.append(
                                 {
-                                    "file": relative_path,
-                                    "line": line_number,
+                                    "file": relative,
+                                    "line": number,
                                     "text": line.rstrip(),
                                 }
                             )
 
+
             except Exception:
+
                 continue
 
+
         return results
+
+
 
     def find_files(
         self,
         project_directory: str,
-        query: str
-    ):
-
-        root = Path(project_directory).resolve()
+        query: str,
+    ) -> list[dict]:
 
         results = []
 
-        for path in root.rglob("*"):
 
-            if path.is_file():
+        for file in self.list_files(
+            project_directory
+        ):
 
-                if query.lower() in path.name.lower():
+            path = Path(file)
 
-                    results.append({
-                        "path": str(
-                            path.relative_to(root)
-                        )
-                    })
+
+            if query.lower() in path.name.lower():
+
+                results.append(
+                    {
+                        "path": file
+                    }
+                )
+
 
         return results

@@ -8,26 +8,16 @@ Description:
 
 Responsibilities:
     - Receive user messages.
-    - Support general AI conversations.
-    - Support optional project context.
+    - Load optional project context.
     - Load conversation history.
     - Execute AI agent.
     - Save messages.
     - Return response.
 
-Architecture:
-
-    User
-      |
-      v
-    Chat API
-      |
-      +----------------+
-      |                |
- General Chat     Project Chat
-      |                |
-      v                v
-    LLM          Project Tools
+Does NOT:
+    - Execute tools.
+    - Manage planning.
+    - Manage LLM communication.
 
 ===============================================================================
 """
@@ -37,25 +27,25 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+
 from app.db.database import get_db
 from app.models.project import Project
+
 
 from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
 )
 
-from app.ai.llm.client import LLMClient
 
+from app.ai.llm.client import LLMClient
 from app.agent.agent import Agent
-from app.agent.planner import Planner
-from app.agent.executor import Executor
-from app.agent.response_builder import ResponseBuilder
 
 from app.services.chat_service import ChatService
 
 
 logger = logging.getLogger(__name__)
+
 
 
 router = APIRouter(
@@ -64,17 +54,60 @@ router = APIRouter(
 )
 
 
+
+# -------------------------------------------------
+# Shared dependencies
+# -------------------------------------------------
+
+llm_client = LLMClient()
+
+
+
 def get_agent() -> Agent:
     """
     Create AI agent.
+
+    Agent owns:
+        - Router
+        - Planner
+        - Executor
+
+    API only provides LLM dependency.
     """
 
     return Agent(
-        planner=Planner(),
-        executor=Executor(),
-        response_builder=ResponseBuilder(),
-        llm=LLMClient(),
+        llm=llm_client,
     )
+
+
+
+def get_project(
+    db: Session,
+    project_id: int,
+) -> Project:
+    """
+    Load project by id.
+    """
+
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id
+        )
+        .first()
+    )
+
+
+    if not project:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found",
+        )
+
+
+    return project
+
 
 
 @router.post(
@@ -87,56 +120,31 @@ def chat(
 ):
     """
     Send message to Neura.
-
-    Supports:
-
-    General:
-
-        {
-            "message": "Explain FastAPI"
-        }
-
-
-    Project:
-
-        {
-            "message": "Review main.py",
-            "project_id": 1
-        }
-
     """
 
     chat_service = ChatService(db)
 
+
     project_directory = None
 
 
+
     # -------------------------------------------------
-    # Load project only when provided
+    # Load project context
     # -------------------------------------------------
 
     if request.project_id is not None:
 
-        project = (
-            db.query(Project)
-            .filter(
-                Project.id == request.project_id
-            )
-            .first()
+        project = get_project(
+            db,
+            request.project_id,
         )
-
-
-        if not project:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Project not found",
-            )
 
 
         project_directory = (
             project.project_directory
         )
+
 
 
     # -------------------------------------------------
@@ -158,13 +166,14 @@ def chat(
 
 
     logger.info(
-        "History loaded: %s messages",
+        "Loaded chat history: %s messages",
         len(history),
     )
 
 
+
     # -------------------------------------------------
-    # Run Agent
+    # Execute Agent
     # -------------------------------------------------
 
     agent = get_agent()
@@ -185,6 +194,12 @@ def chat(
         )
 
 
+    logger.info(
+        "AI response generated successfully"
+    )
+
+
+
     # -------------------------------------------------
     # Save conversation
     # -------------------------------------------------
@@ -203,6 +218,7 @@ def chat(
     )
 
 
+
     return ChatResponse(
         answer=response
     )
@@ -217,44 +233,22 @@ def get_chat_history(
     db: Session = Depends(get_db),
 ):
     """
-    Get chat history.
-
-    Without project_id:
-        Returns general chat.
-
-    With project_id:
-        Returns project conversation.
+    Get conversation history.
     """
+
 
     chat_service = ChatService(db)
 
 
-    # -------------------------------------------------
-    # Validate project
-    # -------------------------------------------------
 
     if project_id is not None:
 
-        project = (
-            db.query(Project)
-            .filter(
-                Project.id == project_id
-            )
-            .first()
+        get_project(
+            db,
+            project_id,
         )
 
 
-        if not project:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Project not found",
-            )
-
-
-    # -------------------------------------------------
-    # Load messages
-    # -------------------------------------------------
 
     messages = chat_service.get_messages(
         project_id=project_id

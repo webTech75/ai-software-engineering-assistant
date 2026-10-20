@@ -21,6 +21,7 @@ Does NOT:
 ===============================================================================
 """
 
+
 from openai import OpenAI
 
 from app.core.config import settings
@@ -29,6 +30,7 @@ from app.agent.prompts.system_prompt import SYSTEM_PROMPT
 
 
 class LLMClient:
+
 
     def __init__(self):
         """
@@ -59,6 +61,7 @@ class LLMClient:
 
         try:
 
+
             if max_tokens is None:
 
                 max_tokens = settings.llm_max_tokens
@@ -66,17 +69,17 @@ class LLMClient:
 
 
             print(
-                f"LLM request | model={settings.LLM_MODEL} | max_tokens={max_tokens}"
+                f"LLM request | "
+                f"model={settings.LLM_MODEL} | "
+                f"max_tokens={max_tokens}"
             )
 
 
 
             response = self.client.chat.completions.create(
-
                 model=settings.LLM_MODEL,
-
                 max_tokens=max_tokens,
-
+                timeout=30,
                 messages=[
 
                     {
@@ -90,17 +93,81 @@ class LLMClient:
                     },
 
                 ],
-
             )
 
 
-        except Exception as e:
+
+            print("================ LLM RESPONSE ================")
+            print(response)
+            print("===============================================")
+
+
+
+            if not response:
+
+                return (
+                    "The AI model returned an empty response."
+                )
+
+
+
+            if not response.choices:
+
+                return (
+                    "The AI model returned no choices."
+                )
+
+
+
+            message = response.choices[0].message
+
+
+            content = message.content
+
+
+            if not content:
+
+                reasoning = getattr(
+                    message,
+                    "reasoning",
+                    None
+                )
+
+
+                if reasoning:
+
+                    return reasoning
+
+
+                return (
+                    "The model completed reasoning "
+                    "but did not return an answer."
+                )
+
+
+            if not content:
+
+                return (
+                    "The AI model returned empty content."
+                )
+
+
+
+            return content
+
+
+
+        except Exception as error:
+
+
+            print("================ LLM ERROR ================")
+            print(type(error).__name__)
+            print(error)
+            print("============================================")
+
+
 
             return (
-                "I could not generate an AI response right now. "
-                f"LLM error: {str(e)}"
+                "I could not generate a response right now. "
+                "Please try again."
             )
-
-
-
-        return response.choices[0].message.content

@@ -1,8 +1,39 @@
+"""
+===============================================================================
+File:
+    app/agent/tools/search_text.py
+
+Description:
+    Searches project files.
+
+Responsibilities:
+    - Expose project search capability to the AI agent.
+    - Search filenames through FileManager.
+    - Search file contents through FileManager.
+    - Return matching results.
+
+Does NOT:
+    - Access filesystem directly.
+    - Manage project context.
+    - Perform AI reasoning.
+    - Validate filesystem security.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 from app.agent.tools.base import BaseTool
 from app.file_system.file_manager import FileManager
 
 
 class SearchTextTool(BaseTool):
+    """
+    Tool used by the agent to locate files
+    or search inside project contents.
+
+    Filesystem operations are delegated to FileManager.
+    """
 
     def __init__(
         self,
@@ -26,21 +57,20 @@ class SearchTextTool(BaseTool):
 
 
     @property
-    def schema(self):
+    def schema(self) -> dict:
         return {
             "type": "function",
             "function": {
-                "name": "search_text",
-                "description": (
-                    "Search project files by filename or content."
-                ),
+                "name": self.name,
+                "description": self.description,
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
                             "description": (
-                                "Filename, path, or text to search for."
+                                "Filename, path, or text "
+                                "to search for."
                             ),
                         },
                         "search_type": {
@@ -71,7 +101,10 @@ class SearchTextTool(BaseTool):
         query: str,
         search_type: str = "file",
         **kwargs,
-    ):
+    ) -> list[dict]:
+        """
+        Search project files through FileManager.
+        """
 
         if search_type == "file":
 
@@ -90,5 +123,6 @@ class SearchTextTool(BaseTool):
 
 
         raise ValueError(
-            "Invalid search_type. Use 'file' or 'content'."
+            "Invalid search_type. "
+            "Use 'file' or 'content'."
         )

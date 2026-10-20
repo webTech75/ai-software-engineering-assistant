@@ -1,66 +1,61 @@
 """
 ===============================================================================
-File: list_files.py
-Path: app/agent/tools/list_files.py
+File:
+    app/agent/tools/list_files.py
 
 Description:
     Lists project files.
 
 Responsibilities:
+    - Expose project file listing capability to the AI agent.
     - Request file listing from FileManager.
     - Return discovered project files.
 
-Notes:
-    - Filesystem rules are handled by FileManager.
-    - Absolute paths are never exposed.
+Does NOT:
+    - Access filesystem directly.
+    - Apply filesystem rules.
+    - Manage project objects.
+    - Perform AI reasoning.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
 
-
 from app.agent.tools.base import BaseTool
 from app.file_system.file_manager import FileManager
 
 
-
 class ListFilesTool(BaseTool):
+    """
+    Tool used by the agent to inspect project structure.
 
+    Filesystem operations are delegated to FileManager.
+    """
 
     def __init__(
         self,
-        file_manager: FileManager | None = None,
+        file_manager: FileManager,
     ):
-        """
-        Initialize filesystem manager.
-        """
-
-        self.file_manager = (
-            file_manager
-            or FileManager()
-        )
-
+        self.file_manager = file_manager
 
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "list_files"
 
 
-
     @property
-    def description(self):
+    def description(self) -> str:
         return (
-            "List all files in the project. "
-            "Use this tool whenever you need "
-            "to inspect the project structure."
+            "List files inside the project. "
+            "Use this tool when inspecting "
+            "the project structure."
         )
 
 
-
     @property
-    def schema(self):
+    def schema(self) -> dict:
         return {
             "type": "function",
             "function": {
@@ -75,16 +70,15 @@ class ListFilesTool(BaseTool):
         }
 
 
-
     def execute(
         self,
         project_directory: str,
-        **kwargs
+        **kwargs,
     ) -> list[str]:
         """
-        Return project files through FileManager.
+        List project files through FileManager.
         """
 
         return self.file_manager.list_files(
-            project_directory
+            project_directory=project_directory,
         )
