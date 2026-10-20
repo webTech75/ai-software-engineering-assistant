@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { LockOpen, User } from 'lucide-react'
 
 import { useAuth } from '../auth/AuthContext'
 import { Logo } from '@/components/common/Logo'
@@ -16,14 +17,30 @@ export function Header () {
   return (
     <header className='flex h-16 items-center justify-between border-b px-6'>
       <Logo />
-      <div className='flex items-center gap-3'>
+
+      <div className='flex items-center gap-2'>
+        <ThemeSwitcher />
         {user && (
           <span className='text-sm font-semibold uppercase'>
-            Welcome, {user.username}
+            Hi, {user.username}
           </span>
         )}
-        <ThemeSwitcher />
-        <button onClick={handleLogout}>Logout</button>
+
+        {/* <button
+          type='button'
+          className='rounded-lg p-2 transition-colors hover:bg-accent'
+        >
+          <User className='h-5 w-5' />
+        </button> */}
+
+        <button
+          type='button'
+          onClick={handleLogout}
+          className='flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent'
+        >
+          <LockOpen className='h-5 w-5 text-green-500' />
+          <span>Logout</span>
+        </button>
       </div>
     </header>
   )

@@ -6,6 +6,8 @@ import { ApiAnalysis } from './analysis/Api'
 import { MetricsAnalysis } from './analysis/Metrics'
 import { ComplexityAnalysis } from './analysis/complexity'
 import { DatabaseAnalysis } from './analysis/Database'
+import ReviewSummary from './ReviewSummary'
+import { Sparkles } from 'lucide-react'
 
 interface ProjectAnalysisProps {
   projectId: number
@@ -44,8 +46,14 @@ export function ProjectAnalysis ({ projectId }: ProjectAnalysisProps) {
 
   return (
     <section className='space-y-4'>
-      <h2 className='font-semibold'>Project Analysis</h2>
+      <div className='flex items-center justify-center gap-3'>
+        <Sparkles className='h-5 w-5 text-primary' />
 
+        <h2 className='text-xl font-semibold'>Project Analysis</h2>
+
+        <Sparkles className='h-5 w-5 text-primary' />
+      </div>
+      <ReviewSummary scan={scan} />
       <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
         <TechnologyAnalysis technology={scan.technology} />
 

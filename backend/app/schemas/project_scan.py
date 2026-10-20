@@ -24,11 +24,16 @@ class StructureResponse(BaseModel):
 
 
 class ProjectScanResponse(BaseModel):
-    statistics: StatisticsResponse
-    technology: TechnologyResponse
-    structure: StructureResponse
-    dependencies: dict[str, Any] = {}
+    review: dict[str, Any]
+    quality: dict[str, Any]
+    bugs: dict[str, Any]
+    security: dict[str, Any]
     api: dict[str, Any] = {}
+    technology: TechnologyResponse
     database: dict[str, Any] = {}
+    dependencies: dict[str, Any] = {}
     metrics: dict[str, Any] = {}
     complexity: dict[str, Any] = {}
+    tests: dict[str, Any]
+    statistics: StatisticsResponse
+    structure: StructureResponse

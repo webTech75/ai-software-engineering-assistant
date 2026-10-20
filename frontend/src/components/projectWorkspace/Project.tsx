@@ -123,7 +123,7 @@ export function Project () {
   }
 
   return (
-    <div className='w-full space-y-8'>
+    <div className='w-full space-y-8 px-6 py-6 lg:px-8'>
       {loadingProject ? (
         <p className='text-muted-foreground'>Loading project...</p>
       ) : project ? (

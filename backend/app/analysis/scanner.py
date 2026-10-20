@@ -13,6 +13,7 @@ from app.analysis.database import DatabaseAnalyzer
 from app.analysis.metrics import MetricsAnalyzer
 from app.analysis.complexity import ComplexityAnalyzer
 from app.analysis.report import ProjectAnalysisReportBuilder
+from app.analysis.review.engine import ProjectReviewEngine
 
 
 class ProjectScanner:
@@ -37,7 +38,6 @@ class ProjectScanner:
             BugAnalyzer(),
             CodeQualityAnalyzer(),
             SecurityAnalyzer(),
-
             TestAnalyzer()
         ]
 
@@ -69,27 +69,26 @@ class ProjectScanner:
 
 
         report = ProjectAnalysisReportBuilder.build(
-            
             statistics=result.get("statistics"),
-
             technology=result.get("technology"),
-
             structure=result.get("structure"),
-
             dependencies=result.get("dependencies"),
-
             api=result.get("api"),
-
             database=result.get("database"),
-
             metrics=result.get("metrics"),
-
             complexity=result.get("complexity"),
+            bugs=result.get("bugs"),
+            quality=result.get("quality"),
+            security=result.get("security"),
+            tests=result.get("tests"),
         )
-
-
         print("\n========== PROJECT REPORT ==========")
 
+        
+        review_engine = ProjectReviewEngine()
+
+        report["review"] = review_engine.review(report)
+        
         for section, data in report.items():
             print(f"\n--- {section.upper()} ---")
             print(data)

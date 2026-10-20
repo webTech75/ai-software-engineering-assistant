@@ -1,11 +1,22 @@
+export interface FileIssue {
+  type: string
+  severity: string
+  message: string
+  line?: number
+}
+
 export interface FileTreeNode {
   name: string
   path: string
   type: 'file' | 'directory'
   children: FileTreeNode[]
+  issues?: FileIssue[]
 }
 
-export function buildFileTree (files: string[]): FileTreeNode[] {
+export function buildFileTree (
+  files: string[],
+  fileIssues: Record<string, FileIssue[]> = {}
+): FileTreeNode[] {
   const root: FileTreeNode[] = []
 
   for (const file of files) {
@@ -25,6 +36,10 @@ export function buildFileTree (files: string[]): FileTreeNode[] {
           path: currentPath,
           type: index === parts.length - 1 ? 'file' : 'directory',
           children: []
+        }
+
+        if (index === parts.length - 1 && fileIssues[currentPath]) {
+          node.issues = fileIssues[currentPath]
         }
 
         current.push(node)

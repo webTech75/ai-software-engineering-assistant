@@ -47,7 +47,10 @@ class BugAnalyzer(BaseAnalyzer):
             )
 
         return {
-            "bugs": bugs
+            "bugs": {
+                "count": len(bugs),
+                "issues": bugs
+            }
         }
 
     def _find_todos(

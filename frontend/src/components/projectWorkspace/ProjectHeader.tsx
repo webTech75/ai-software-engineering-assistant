@@ -10,7 +10,7 @@ export function ProjectHeader ({ project }: ProjectHeaderProps) {
   return (
     <section>
       <div className='mb-4 flex items-center justify-between'>
-        <h1 className='text-3xl font-bold'>Project Workspace</h1>
+        <h1 className='text-3xl font-bold'>{project.name} Workspace</h1>
 
         <button
           type='button'
@@ -20,19 +20,10 @@ export function ProjectHeader ({ project }: ProjectHeaderProps) {
           ← Dashboard
         </button>
       </div>
-      <div className='mt-2 space-y-1'>
-        <div className='flex items-center gap-3'>
-          <p className='text-xl font-semibold'>{project.name}</p>
 
-          <span className='text-sm text-muted-foreground'>
-            -- Project ID: {project.id}
-          </span>
-        </div>
-
-        {project.description && (
-          <p className='text-muted-foreground'>{project.description}</p>
-        )}
-      </div>
+      {project.description && (
+        <p className='text-muted-foreground'>{project.description}</p>
+      )}
     </section>
   )
 }

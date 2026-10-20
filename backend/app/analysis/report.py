@@ -23,13 +23,30 @@ class ProjectAnalysisReportBuilder:
     @staticmethod
     def build(
         statistics: dict[str, Any] | None = None,
+
         technology: dict[str, Any] | None = None,
+
         structure: dict[str, Any] | None = None,
+
         dependencies: dict[str, Any] | None = None,
+
         api: dict[str, Any] | None = None,
+
         database: dict[str, Any] | None = None,
+
         metrics: dict[str, Any] | None = None,
+
         complexity: dict[str, Any] | None = None,
+
+        bugs: dict[str, Any] | None = None,
+
+        quality: dict[str, Any] | None = None,
+
+        security: dict[str, Any] | None = None,
+        
+        tests: dict[str, Any] | None = None,
+
+        
     ) -> dict[str, Any]:
         """
         Create a factual project analysis report.
@@ -63,4 +80,14 @@ class ProjectAnalysisReportBuilder:
             "metrics": metrics or {},
 
             "complexity": complexity or {},
+
+
+            # project health
+            "bugs": bugs or {},
+
+            "quality": quality or {},
+
+            "security": security or {},
+
+            "tests": tests or {},
         }

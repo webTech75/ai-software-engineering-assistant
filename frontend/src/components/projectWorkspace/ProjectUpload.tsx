@@ -38,7 +38,7 @@ export default function ProjectUpload ({
   return (
     <div className='space-y-2'>
       <label className='flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted'>
-        <Upload className='h-4 w-4' />
+        <Upload className='h-5 w-5 text-primary' />
         Upload Project
         <input type='file' accept='.zip' hidden onChange={handleUpload} />
       </label>

@@ -9,7 +9,6 @@ class ComplexityAnalyzer(BaseAnalyzer):
 
     name = "ComplexityAnalyzer"
 
-
     def analyze(self, project_directory):
 
         root = Path(project_directory)
@@ -23,26 +22,21 @@ class ComplexityAnalyzer(BaseAnalyzer):
             "highest_complexity": []
         }
 
-
         for file in root.rglob("*"):
 
             if self.should_ignore(file):
                 continue
 
-
             if not file.is_file():
                 continue
 
-
             if file.suffix == ".py":
 
-                data = self.analyze_python_file(file)
+                data = self.analyze_python_file(file, root)
 
                 result["files_analyzed"] += 1
 
-                result["total_functions"] += len(
-                    data
-                )
+                result["total_functions"] += len(data)
 
                 for function in data:
 
@@ -54,7 +48,6 @@ class ComplexityAnalyzer(BaseAnalyzer):
                         function
                     )
 
-
         if result["total_functions"]:
 
             result["average_complexity"] = round(
@@ -64,22 +57,18 @@ class ComplexityAnalyzer(BaseAnalyzer):
                 2
             )
 
-
         result["highest_complexity"] = sorted(
             result["functions"],
             key=lambda x: x["complexity"],
             reverse=True
         )[:10]
 
-
         return {"complexity": result}
 
 
-
-    def analyze_python_file(self, file):
+    def analyze_python_file(self, file, root):
 
         results = []
-
 
         try:
 
@@ -110,7 +99,7 @@ class ComplexityAnalyzer(BaseAnalyzer):
 
                     results.append(
                         {
-                            "file": str(file),
+                            "file": str(file.relative_to(root)),
                             "function": node.name,
                             "complexity": complexity
                         }
@@ -123,7 +112,6 @@ class ComplexityAnalyzer(BaseAnalyzer):
 
 
         return results
-
 
 
     def calculate_complexity(self, node):
@@ -157,7 +145,6 @@ class ComplexityAnalyzer(BaseAnalyzer):
 
 
         return complexity
-
 
 
     def should_ignore(self, path):

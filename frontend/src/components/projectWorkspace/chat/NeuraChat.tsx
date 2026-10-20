@@ -27,7 +27,6 @@ export function NeuraChat ({
   handleSubmit,
   messagesEndRef
 }: NeuraChatProps) {
-  console.log('msg', messages)
   return (
     <section className='rounded-xl border bg-background p-6'>
       <h2 className='text-xl font-semibold'>Neura</h2>

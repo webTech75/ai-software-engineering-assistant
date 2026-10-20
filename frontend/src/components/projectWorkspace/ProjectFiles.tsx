@@ -32,22 +32,10 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
 
   const { data: scan, isLoading } = useProjectScan(projectId)
   const queryClient = useQueryClient()
+  const files = scan?.structure.files ?? []
 
-  const hiddenFiles = [
-    '.env',
-    '.env.example',
-    '.gitignore',
-    '__init__.py',
-    'assistant.db',
-    'script.py.mako',
-    'README'
-  ]
-
-  const files = scan?.structure.files.filter(file => {
-    const filename = file.split('/').pop()
-    return !hiddenFiles.includes(filename || '')
-  })
   console.log('scan>>>>>', scan)
+
   return (
     <>
       <h2 className='mb-4 font-semibold'>Project Files</h2>
@@ -62,12 +50,17 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
         />
       </div>
 
-      <div className='min-h-0 flex-1 overflow-y-auto'>
-        <div className='space-y-1 text-sm'>
+      <div className='relative min-h-0 flex-1 overflow-visible'>
+        <div className='h-full overflow-y-auto'>
           {isLoading ? (
             <p className='text-muted-foreground'>Loading files...</p>
           ) : files && files.length > 0 ? (
-            <FileTree nodes={buildFileTree(files ?? [])} />
+            <FileTree
+              nodes={buildFileTree(
+                files ?? [],
+                scan?.review?.file_issues ?? {}
+              )}
+            />
           ) : (
             <div className='flex flex-col items-center justify-center py-8 text-center'>
               <Folder className='h-8 w-8 text-muted-foreground mb-3' />

@@ -89,5 +89,8 @@ class SecurityAnalyzer(BaseAnalyzer):
                         })
 
         return {
-            "security": findings
+            "security": {
+                "count": len(findings),
+                "issues": findings
+            }
         }
