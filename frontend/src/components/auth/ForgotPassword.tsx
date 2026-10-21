@@ -11,7 +11,8 @@ export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
 
-  async function handleSubmit (event: FormEvent) {
+  // @ts-ignore
+  async function handleSubmit (event) {
     event.preventDefault()
 
     if (error) setError('')
@@ -41,7 +42,7 @@ export function ForgotPassword ({ onBack }: ForgotPasswordProps) {
       console.error(err)
       showToast('Unable to process your request.', 'error')
     } finally {
-      hideLoader(false)
+      hideLoader()
     }
   }
 

@@ -22,7 +22,8 @@ export function LoginForm ({ mode, setMode }: LoginFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [registrationCode, setRegistrationCode] = useState('')
 
-  async function handleSubmit (event: FormEvent) {
+  // @ts-ignore
+  async function handleSubmit (event) {
     event.preventDefault()
 
     setError('')

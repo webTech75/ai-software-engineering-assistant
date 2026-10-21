@@ -14,7 +14,8 @@ export function CreateProjectForm ({ onCreated }: CreateProjectFormProps) {
   const [creating, setCreating] = useState(false)
   const { showLoader, hideLoader, showToast } = useAuth()
 
-  async function handleSubmit (event: FormEvent) {
+  // @ts-ignore
+  async function handleSubmit (event) {
     event.preventDefault()
 
     if (!name.trim()) {

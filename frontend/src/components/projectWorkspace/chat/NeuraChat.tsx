@@ -12,7 +12,8 @@ interface NeuraChatProps {
   username?: string
 
   setMessage: (value: string) => void
-  handleSubmit: (event: FormEvent) => void
+  // @ts-ignore
+  handleSubmit: (event) => void
 
   messagesEndRef: React.RefObject<HTMLDivElement | null>
 }

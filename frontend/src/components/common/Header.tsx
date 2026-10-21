@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { LockOpen, User } from 'lucide-react'
+import { LockOpen } from 'lucide-react'
 
 import { useAuth } from '../auth/AuthContext'
 import { Logo } from '@/components/common/Logo'

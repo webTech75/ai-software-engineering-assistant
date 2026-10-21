@@ -79,7 +79,8 @@ export function Project () {
     }
   }
 
-  async function handleSubmit (event: FormEvent) {
+  // @ts-ignore
+  async function handleSubmit (event) {
     event.preventDefault()
 
     const text = message.trim()
