@@ -10,13 +10,16 @@ class StatisticsResponse(BaseModel):
     largest_file: str | None = None
     largest_file_size: int
 
-
 class TechnologyResponse(BaseModel):
-    language: str | None = None
-    framework: str | None = None
+    languages: list[str] = []
+    frameworks: list[str] = []
     database: str | None = None
-    orm: str | None = None
-    migration_tool: str | None = None
+    orms: list[str] = []
+    migration_tools: list[str] = []
+    package_manager: str | None = None
+    build_tools: list[str] = []
+    testing_tools: list[str] = []
+    styling_tools: list[str] = []
 
 
 class StructureResponse(BaseModel):

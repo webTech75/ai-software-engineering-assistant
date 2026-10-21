@@ -34,10 +34,21 @@ export function Dashboard () {
 
   return (
     <div className='mx-auto w-full max-w-6xl space-y-8'>
-      <section>
-        <p className='text-3xl font-bold'>
-          Welcome back, {formatName(user?.username)}
-          👋
+      <section className='text-center'>
+        <img
+          src='/neura_icon.png'
+          alt='Neura'
+          className='mx-auto h-24 w-24 rounded-2xl'
+        />
+
+        <h1 className='mt-6 text-4xl font-bold'>Neura</h1>
+
+        <p className='mt-2 text-xl text-muted-foreground'>
+          Your AI Software Engineering Assistant
+        </p>
+
+        <p className='mt-4 text-muted-foreground'>
+          Welcome back, {formatName(user?.username)} 👋
         </p>
 
         <p className='mt-2 text-muted-foreground'>

@@ -471,13 +471,14 @@ input::placeholder {
 }
 
 
-/** login page background **/
+/** AppBackground**/
 .auth-bg {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    background: var(--background);
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--background);
 }
 
 /* faint grid, fading out toward the edges */

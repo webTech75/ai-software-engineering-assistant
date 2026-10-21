@@ -29,11 +29,21 @@ export function NeuraChat ({
 }: NeuraChatProps) {
   return (
     <section className='rounded-xl border bg-background p-6'>
-      <h2 className='text-xl font-semibold'>Neura</h2>
+      <div className='flex items-center gap-3'>
+        <img
+          src='/neura_icon.png'
+          alt='Neura'
+          className='h-12 w-12 rounded-xl'
+        />
 
-      <p className='mt-2 text-muted-foreground'>
-        Ask Neura about your software engineering tasks.
-      </p>
+        <div>
+          <h2 className='text-xl font-semibold'>Neura</h2>
+
+          <p className='text-sm text-muted-foreground'>
+            Your AI Software Engineering Assistant
+          </p>
+        </div>
+      </div>
 
       <div
         className='mt-6 h-[550px] overflow-y-auto space-y-4 rounded-xl border bg-card p-5 shadow-sm'
@@ -59,9 +69,18 @@ export function NeuraChat ({
               }`}
             >
               <p className='mb-3 text-sm font-semibold'>
-                {item.role === 'user'
-                  ? formatName(username) || 'User'
-                  : 'Neura'}
+                {item.role === 'user' ? (
+                  formatName(username) || 'User'
+                ) : (
+                  <>
+                    <img
+                      src='/neura_icon.png'
+                      alt='Neura'
+                      className='h-4 w-4 rounded'
+                    />
+                    <span>Neura</span>
+                  </>
+                )}
               </p>
 
               <div

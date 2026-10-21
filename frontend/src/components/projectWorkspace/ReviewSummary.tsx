@@ -47,32 +47,31 @@ export default function ReviewSummary ({ scan }: ReviewSummaryProps) {
       title: 'Bugs',
       count: bugCount,
       label: bugCount === 1 ? 'issue' : 'issues',
-      score: Math.max(100 - bugCount * 10, 0),
+      score: Math.round(100 / (1 + bugCount * 0.1)),
       icon: <Bug className='h-4 w-4 text-red-500' />
     },
     {
       title: 'Security',
       count: securityCount,
       label: securityCount === 1 ? 'finding' : 'findings',
-      score: Math.max(100 - securityCount * 20, 0),
+      score: Math.round(100 / (1 + securityCount * 0.25)),
       icon: <ShieldAlert className='h-4 w-4 text-red-500' />
     },
     {
       title: 'Complexity',
       count: complexityCount,
       label: complexityCount === 1 ? 'function' : 'functions',
-      score: Math.max(100 - complexityCount * 10, 0),
+      score: Math.round(100 / (1 + complexityCount * 0.1)),
       icon: <Brain className='h-4 w-4 text-orange-500' />
     },
     {
       title: 'Tests',
       count: scan?.tests?.total_test_files ?? 0,
-      label: 'tests',
+      label: scan?.tests?.total_test_files === 1 ? 'test' : 'tests',
       score: scan?.tests?.total_test_files ? 100 : 0,
       icon: <FlaskConical className='h-4 w-4 text-yellow-500' />
     }
   ]
-
   return (
     <div className='mb-6 space-y-6'>
       {/* Overall Health */}
@@ -141,13 +140,13 @@ export default function ReviewSummary ({ scan }: ReviewSummaryProps) {
       </div>
 
       {/* Summary */}
-      {/* {scan?.review?.summary && (
+      {scan?.review?.summary && (
         <div className='rounded-lg border bg-card p-4'>
           <h3 className='mb-2 text-sm font-semibold'>Summary</h3>
 
           <p className='text-sm text-muted-foreground'>{scan.review.summary}</p>
         </div>
-      )} */}
+      )}
 
       {/* Strengths */}
       {scan?.review?.strengths?.length > 0 && (

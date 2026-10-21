@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { AuthCard } from '@/components/auth/AuthCard'
 import { Navigate } from 'react-router-dom'
 import { storage } from '@/components/auth/auth'
+import { Footer } from '@/components/common/Footer'
 
 export function Landing () {
   const [showLogin, setShowLogin] = useState(false)
@@ -16,18 +17,20 @@ export function Landing () {
   }
 
   return (
-    <main className='min-h-screen overflow-hidden bg-background'>
+    <main className='relative min-h-screen bg-background'>
       <AuthBackground />
 
-      {showLogin ? (
-        <AuthCard />
-      ) : (
-        <>
-          <LandingHeader onLogin={() => setShowLogin(true)} />
-
-          <Hero />
-        </>
-      )}
+      <div className='relative z-10'>
+        {showLogin ? (
+          <AuthCard />
+        ) : (
+          <>
+            <LandingHeader onLogin={() => setShowLogin(true)} />
+            <Hero />
+            <Footer />
+          </>
+        )}
+      </div>
     </main>
   )
 }

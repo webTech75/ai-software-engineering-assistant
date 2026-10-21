@@ -8,7 +8,6 @@ class ProjectReviewEngine:
         analysis: dict[str, Any]
     ) -> dict[str, Any]:
 
-
         summary = self.generate_summary(
             analysis
         )
@@ -35,9 +34,11 @@ class ProjectReviewEngine:
             "strengths": strengths,
             "warnings": warnings,
             "recommendations": recommendations,
-            "file_issues": self.generate_file_issues(analysis)
+            "file_issues": self.generate_file_issues(
+                analysis
+            )
         }
-    
+
 
     def generate_file_issues(
         self,
@@ -55,16 +56,22 @@ class ProjectReviewEngine:
             if file not in file_issues:
                 file_issues[file] = []
 
-            file_issues[file].append(issue)
+            file_issues[file].append(
+                issue
+            )
 
 
         # Bugs
+
         bugs = analysis.get(
             "bugs",
             {}
         )
 
-        for issue in bugs.get("issues", []):
+        for issue in bugs.get(
+            "issues",
+            []
+        ):
 
             add_issue(
                 issue.get("file"),
@@ -78,12 +85,16 @@ class ProjectReviewEngine:
 
 
         # Security
+
         security = analysis.get(
             "security",
             {}
         )
 
-        for issue in security.get("issues", []):
+        for issue in security.get(
+            "issues",
+            []
+        ):
 
             add_issue(
                 issue.get("file"),
@@ -97,6 +108,7 @@ class ProjectReviewEngine:
 
 
         # Complexity
+
         complexity = analysis.get(
             "complexity",
             {}
@@ -107,7 +119,10 @@ class ProjectReviewEngine:
             []
         ):
 
-            if item.get("complexity", 0) >= 8:
+            if item.get(
+                "complexity",
+                0
+            ) >= 8:
 
                 add_issue(
                     item.get("file"),
@@ -123,7 +138,8 @@ class ProjectReviewEngine:
 
 
         return file_issues
-    
+
+
 
     def generate_summary(
         self,
@@ -145,51 +161,74 @@ class ProjectReviewEngine:
             {}
         )
 
-        language = technology.get(
-            "language",
-            "Unknown"
+
+        languages = technology.get(
+            "languages",
+            []
         )
 
-        framework = technology.get(
-            "framework",
-            "Unknown"
+        frameworks = technology.get(
+            "frameworks",
+            []
         )
 
         database = technology.get(
-            "database",
-            "Unknown"
+            "database"
         )
+
+
+        language_text = (
+            ", ".join(languages)
+            if languages
+            else "Unknown language"
+        )
+
+        framework_text = (
+            ", ".join(frameworks)
+            if frameworks
+            else "Unknown framework"
+        )
+
+        database_text = (
+            database
+            if database
+            else "no detected database"
+        )
+
 
         total_files = statistics.get(
             "total_files",
             0
         )
 
+
         summary = (
-            f"{language} project "
-            f"using {framework} "
-            f"with {database} database. "
+            f"{language_text} project "
+            f"using {framework_text} "
+            f"with {database_text}. "
             f"The project contains "
             f"{total_files} files."
         )
 
 
-        if tests.get("exists"):
+        if tests.get(
+            "exists"
+        ):
             summary += (
                 " Automated tests are included."
             )
 
         return summary
-
+    
 
     def calculate_health_score(
         self,
         analysis: dict[str, Any]
     ) -> int:
 
-        score = 100
+        scores = {}
 
-        # Security scoring
+        # Security score
         security = analysis.get(
             "security",
             {}
@@ -200,91 +239,75 @@ class ProjectReviewEngine:
             []
         )
 
-        for issue in security_issues:
-            severity = issue.get(
-                "severity",
-                "LOW"
-            ).upper()
+        security_count = len(security_issues)
 
-            if severity == "HIGH":
-                score -= 15
-
-            elif severity == "MEDIUM":
-                score -= 8
-
-            else:
-                score -= 3
+        scores["security"] = round(
+            100 / (1 + security_count * 0.25)
+        )
 
 
-        # Bug scoring
+        # Bug score
         bugs = analysis.get(
             "bugs",
             {}
         )
 
-        bug_issues = bugs.get(
-            "issues",
-            []
+        bug_count = len(
+            bugs.get(
+                "issues",
+                []
+            )
         )
 
-        for issue in bug_issues:
-            severity = issue.get(
-                "severity",
-                "LOW"
-            ).upper()
-
-            if severity == "HIGH":
-                score -= 8
-
-            elif severity == "MEDIUM":
-                score -= 5
-
-            else:
-                score -= 1
+        scores["bugs"] = round(
+            100 / (1 + bug_count * 0.1)
+        )
 
 
-        # Complexity scoring
+        # Complexity score
         complexity = analysis.get(
             "complexity",
             {}
         )
 
-        total_complexity = complexity.get(
+        complexity_count = complexity.get(
             "total_complexity",
             0
         )
 
-        if total_complexity > 200:
-            score -= 10
-
-
-        highest_complexity = complexity.get(
-            "highest_complexity",
-            []
+        scores["complexity"] = round(
+            100 / (1 + complexity_count * 0.1)
         )
 
-        for item in highest_complexity:
-            if item.get("complexity", 0) >= 8:
-                score -= 5
-                break
 
-
-        # Test scoring
+        # Tests score
         tests = analysis.get(
             "tests",
             {}
         )
 
-        total_tests = tests.get(
+        test_files = tests.get(
             "total_test_files",
             0
         )
 
-        if total_tests == 0:
-            score -= 10
+        scores["tests"] = (
+            100
+            if test_files > 0
+            else 0
+        )
 
 
-        return max(score, 0)
+        health_score = (
+            scores["security"] * 0.30 +
+            scores["bugs"] * 0.30 +
+            scores["complexity"] * 0.20 +
+            scores["tests"] * 0.20
+        )
+
+
+        return round(health_score)
+
 
 
     def generate_warnings(
@@ -293,6 +316,7 @@ class ProjectReviewEngine:
     ) -> list[str]:
 
         warnings = []
+
 
         complexity = analysis.get(
             "complexity",
@@ -304,8 +328,14 @@ class ProjectReviewEngine:
             []
         )
 
+
         for item in highest:
-            if item.get("complexity", 0) >= 8:
+
+            if item.get(
+                "complexity",
+                0
+            ) >= 8:
+
                 warnings.append(
                     {
                         "type": "complexity",
@@ -317,40 +347,72 @@ class ProjectReviewEngine:
                 )
 
 
+
         bugs = analysis.get(
             "bugs",
             {}
         )
 
-        for bug in bugs.get("issues", []):
+
+        for bug in bugs.get(
+            "issues",
+            []
+        ):
+
             warnings.append(
                 {
                     "type": "bug",
-                    "severity": bug.get("severity", "LOW"),
-                    "file": bug.get("file"),
-                    "line": bug.get("line"),
-                    "message": bug.get("message")
+                    "severity": bug.get(
+                        "severity",
+                        "LOW"
+                    ),
+                    "file": bug.get(
+                        "file"
+                    ),
+                    "line": bug.get(
+                        "line"
+                    ),
+                    "message": bug.get(
+                        "message"
+                    )
                 }
             )
+
+
 
         security = analysis.get(
             "security",
             {}
         )
 
-        for issue in security.get("issues", []):
+
+        for issue in security.get(
+            "issues",
+            []
+        ):
+
             warnings.append(
                 {
                     "type": "security",
-                    "severity": issue.get("severity", "HIGH"),
-                    "file": issue.get("file"),
-                    "line": issue.get("line"),
-                    "message": issue.get("message")
+                    "severity": issue.get(
+                        "severity",
+                        "HIGH"
+                    ),
+                    "file": issue.get(
+                        "file"
+                    ),
+                    "line": issue.get(
+                        "line"
+                    ),
+                    "message": issue.get(
+                        "message"
+                    )
                 }
             )
 
 
         return warnings
+
 
 
     def generate_strengths(
@@ -360,48 +422,85 @@ class ProjectReviewEngine:
 
         strengths = []
 
+
         technology = analysis.get(
             "technology",
             {}
         )
 
-        if technology.get("framework"):
+
+        frameworks = technology.get(
+            "frameworks",
+            []
+        )
+
+        orms = technology.get(
+            "orms",
+            []
+        )
+
+        migration_tools = technology.get(
+            "migration_tools",
+            []
+        )
+
+
+        for framework in frameworks:
+
             strengths.append(
-                f"Uses {technology['framework']} framework"
+                f"Uses {framework} framework"
             )
 
-        if technology.get("orm"):
+
+        for orm in orms:
+
             strengths.append(
-                f"Uses {technology['orm']} ORM"
+                f"Uses {orm} ORM"
             )
 
-        if technology.get("migration_tool"):
+
+        for migration_tool in migration_tools:
+
             strengths.append(
-                f"Uses {technology['migration_tool']} for database migrations"
+                f"Uses {migration_tool} for database migrations"
             )
+
+
 
         database = analysis.get(
             "database",
             {}
         )
 
-        if database.get("engine"):
+
+        if database.get(
+            "engine"
+        ):
+
             strengths.append(
                 f"Database configured: {database['engine']}"
             )
+
+
 
         tests = analysis.get(
             "tests",
             {}
         )
 
-        if tests.get("exists"):
+
+        if tests.get(
+            "exists"
+        ):
+
             strengths.append(
                 "Project contains automated tests"
             )
 
+
         return strengths
-    
+
+
 
     def generate_recommendations(
         self,
@@ -412,6 +511,7 @@ class ProjectReviewEngine:
 
 
         # Complexity recommendations
+
         complexity = analysis.get(
             "complexity",
             {}
@@ -422,9 +522,13 @@ class ProjectReviewEngine:
             []
         )
 
+
         for item in highest:
 
-            if item.get("complexity", 0) >= 8:
+            if item.get(
+                "complexity",
+                0
+            ) >= 8:
 
                 recommendations.append(
                     f"Refactor {item.get('function')}() "
@@ -432,16 +536,20 @@ class ProjectReviewEngine:
                 )
 
 
+
         # Test recommendations
+
         tests = analysis.get(
             "tests",
             {}
         )
 
+
         total_tests = tests.get(
             "total_test_files",
             0
         )
+
 
         if total_tests == 0:
 
@@ -450,16 +558,20 @@ class ProjectReviewEngine:
             )
 
 
+
         # Security recommendations
+
         security = analysis.get(
             "security",
             {}
         )
 
+
         issues = security.get(
             "issues",
             []
         )
+
 
         for issue in issues:
 
@@ -473,17 +585,20 @@ class ProjectReviewEngine:
                 "unknown file"
             )
 
+
             if issue_type == "HARDCODED_SECRET":
 
                 recommendations.append(
                     f"Remove hardcoded secret from {file}"
                 )
 
+
             elif issue_type == "DANGEROUS_FUNCTION":
 
                 recommendations.append(
                     f"Review dangerous function usage in {file}"
                 )
+
 
             else:
 
@@ -492,22 +607,27 @@ class ProjectReviewEngine:
                 )
 
 
+
         # Bug recommendations
+
         bugs = analysis.get(
             "bugs",
             {}
         )
+
 
         bug_issues = bugs.get(
             "issues",
             []
         )
 
+
         for issue in bug_issues:
 
             recommendations.append(
                 f"Resolve {issue.get('type')} issue "
-                f"in {issue.get('file')} line {issue.get('line')}"
+                f"in {issue.get('file')} "
+                f"line {issue.get('line')}"
             )
 
 

@@ -3,8 +3,8 @@ import axios from 'axios'
 import { storage, logout } from '@/components/auth/auth'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 60000
+  baseURL: import.meta.env.VITE_API_URL
+  //timeout: 60000
 })
 
 api.interceptors.request.use(
