@@ -34,10 +34,11 @@ def send_password_reset_email(
     print("SMTP PORT:", settings.email_port)
     print("SMTP USER:", settings.email_username)
     print("SMTP FROM:", settings.email_from)
-
+    print("ABOUT TO CONNECT SMTP")
     with smtplib.SMTP(
         settings.email_host,
         settings.email_port,
+        timeout=10,
     ) as server:
 
         server.starttls()
@@ -46,5 +47,8 @@ def send_password_reset_email(
             settings.email_username,
             settings.email_password,
         )
+        
+        print("SMTP LOGIN SUCCESS")
 
         server.send_message(message)
+        print("EMAIL SENT")
