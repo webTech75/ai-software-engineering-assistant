@@ -29,13 +29,15 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 
 # SQLAlchemy engine used to communicate with the database.
+
+connect_args = {}
+
+if settings.database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
 engine = create_engine(
     settings.database_url,
-    echo=True,
-    connect_args={
-        "check_same_thread": False,
-        "timeout": 30,
-    },
+    connect_args=connect_args,
 )
 
 # Factory used to create independent database sessions.
