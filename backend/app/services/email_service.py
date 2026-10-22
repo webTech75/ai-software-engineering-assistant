@@ -1,5 +1,4 @@
-import smtplib
-from email.message import EmailMessage
+import sib_api_v3_sdk
 
 from app.core.config import settings
 
@@ -8,47 +7,48 @@ def send_password_reset_email(
     recipient_email: str,
     reset_link: str,
 ):
-    message = EmailMessage()
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key["api-key"] = settings.brevo_api_key
 
-    message["Subject"] = "Reset your password"
-    message["From"] = settings.email_from
-    message["To"] = recipient_email
+    api_client = sib_api_v3_sdk.ApiClient(configuration)
 
-    message.set_content(
-        f"""
-        Hello,
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
 
-        You requested a password reset for your AI Software Engineering Assistant account.
+    email = sib_api_v3_sdk.SendSmtpEmail(
+        sender={
+            "name": "AI Software Engineering Assistant",
+            "email": settings.email_from,
+        },
+        to=[
+            {
+                "email": recipient_email,
+            }
+        ],
+        subject="Reset your password",
+        html_content=f"""
+                    <p>Hello,</p>
 
-        Click the link below to reset your password:
+                    <p>You requested a password reset for your AI Software Engineering Assistant account.</p>
 
-        {reset_link}
+                    <p>
+                    Click the link below to reset your password:
+                    </p>
 
-        If you did not request this password reset, you can ignore this email.
+                    <p>
+                    <a href="{reset_link}">
+                        Reset Password
+                    </a>
+                    </p>
 
-        AI Software Engineering Assistant
-        """
+                    <p>
+                    If you received this email by mistake or did not request a password reset, 
+                    please ignore this message. No action is required.
+                    </p>
+
+                    <p>
+                    AI Software Engineering Assistant
+                    </p>
+                    """
     )
-    
-    print("SMTP HOST:", settings.email_host)
-    print("SMTP PORT:", settings.email_port)
-    print("SMTP USER:", settings.email_username)
-    print("SMTP FROM:", settings.email_from)
-    print("ABOUT TO CONNECT SMTP")
-    with smtplib.SMTP(
-        settings.email_host,
-        settings.email_port,
-        timeout=10,
-    ) as server:
 
-        server.starttls()
-
-        server.login(
-            settings.email_username,
-            settings.email_password,
-        )
-        
-        print("SMTP LOGIN SUCCESS")
-
-        server.send_message(message)
-        print("EMAIL SENT")
+    api_instance.send_transac_email(email)
