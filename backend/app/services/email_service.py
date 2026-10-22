@@ -16,19 +16,24 @@ def send_password_reset_email(
 
     message.set_content(
         f"""
-Hello,
+        Hello,
 
-You requested a password reset for your AI Software Engineering Assistant account.
+        You requested a password reset for your AI Software Engineering Assistant account.
 
-Click the link below to reset your password:
+        Click the link below to reset your password:
 
-{reset_link}
+        {reset_link}
 
-If you did not request this password reset, you can ignore this email.
+        If you did not request this password reset, you can ignore this email.
 
-AI Software Engineering Assistant
-"""
+        AI Software Engineering Assistant
+        """
     )
+    
+    print("SMTP HOST:", settings.email_host)
+    print("SMTP PORT:", settings.email_port)
+    print("SMTP USER:", settings.email_username)
+    print("SMTP FROM:", settings.email_from)
 
     with smtplib.SMTP(
         settings.email_host,

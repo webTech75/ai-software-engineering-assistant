@@ -49,6 +49,7 @@ from app.models.password_reset_token import PasswordResetToken
 app = FastAPI(
     title=settings.app_name,
     version="1.0.0",
+     debug=True,
 )
 
 app.add_middleware(
