@@ -147,7 +147,7 @@ class UserService:
         if password_reset.used:
             raise ValueError("This reset link has already been used.")
 
-        if password_reset.expires_at < datetime.now():
+        if password_reset.expires_at < datetime.now(timezone.utc):
             raise ValueError("This reset link has expired.")
 
         user = password_reset.user
