@@ -2,7 +2,7 @@ import { useProjectScan } from '@/hooks/useProjectScan'
 import { buildFileTree } from '@/utils/buildFileTree'
 import FileTree from './FileTree'
 import ProjectUpload from './ProjectUpload'
-import { Folder } from 'lucide-react'
+import { Folder, Loader2 } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface ProjectFilesProps {
@@ -30,7 +30,7 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
   //   }
   // }
 
-  const { data: scan, isLoading } = useProjectScan(projectId)
+  const { data: scan, isLoading, isFetching } = useProjectScan(projectId)
   const queryClient = useQueryClient()
   const files = scan?.structure.files ?? []
 
@@ -52,8 +52,11 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
 
       <div className='relative min-h-0 flex-1 overflow-visible'>
         <div className='h-full overflow-y-auto'>
-          {isLoading ? (
-            <p className='text-muted-foreground'>Loading files...</p>
+          {isLoading || isFetching ? (
+            <div className='flex items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-400 animate-pulse'>
+              <Loader2 className='h-4 w-4 animate-spin' />
+              <span>Neura processing project files...</span>
+            </div>
           ) : files && files.length > 0 ? (
             <FileTree
               nodes={buildFileTree(

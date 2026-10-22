@@ -7,24 +7,25 @@ import { MetricsAnalysis } from './analysis/Metrics'
 import { ComplexityAnalysis } from './analysis/complexity'
 import { DatabaseAnalysis } from './analysis/Database'
 import ReviewSummary from './ReviewSummary'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Loader2 } from 'lucide-react'
 
 interface ProjectAnalysisProps {
   projectId: number
 }
 
 export function ProjectAnalysis ({ projectId }: ProjectAnalysisProps) {
-  const { data: scan, isLoading } = useProjectScan(projectId)
+  const { data: scan, isLoading, isFetching } = useProjectScan(projectId)
 
   function hasAnalysisData (scan: any) {
     return scan && scan.statistics && scan.statistics.total_files > 0
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
-      <p className='text-sm text-center text-muted-foreground'>
-        Loading analysis...
-      </p>
+      <div className='flex items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-400 animate-pulse'>
+        <Loader2 className='h-4 w-4 animate-spin' />
+        <span>Neura is analyzing your project...</span>
+      </div>
     )
   }
 
