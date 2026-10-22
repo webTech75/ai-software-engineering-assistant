@@ -44,10 +44,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = []
     
 
-    email_host: str
-    email_port: int = 587
-    email_username: str
-    email_password: str
+    brevo_api_key: str
     email_from: str
 
     model_config = SettingsConfigDict(
