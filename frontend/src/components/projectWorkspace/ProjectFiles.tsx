@@ -55,7 +55,7 @@ export function ProjectFiles ({ projectId }: ProjectFilesProps) {
           {isLoading || isFetching ? (
             <div className='flex items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-400 animate-pulse'>
               <Loader2 className='h-4 w-4 animate-spin' />
-              <span>Neura processing project files...</span>
+              <span>Neura is processing project files...</span>
             </div>
           ) : files && files.length > 0 ? (
             <FileTree
