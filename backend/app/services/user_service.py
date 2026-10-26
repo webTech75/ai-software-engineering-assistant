@@ -26,7 +26,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import secrets
 from datetime import datetime, timedelta, timezone
-from app.services.email_service import send_password_reset_email
+from app.services.email_service import send_password_reset_email, send_admin_notification_email
 from app.core.config import settings
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -38,6 +38,7 @@ from app.models.password_reset_token import PasswordResetToken
 from app.repositories.password_reset_token_repository import (
     PasswordResetTokenRepository,
 )
+
 
 
 class UserService:
@@ -78,7 +79,31 @@ class UserService:
             password_hash=password_hash,
         )
 
-        return self.repository.create(user)
+        created_user = self.repository.create(user)
+        
+        try:
+
+            send_admin_notification_email(
+                "New Neura account created",
+                f"""
+                <h3>New user registration</h3>
+
+                <p>A new user created an account in Neura.</p>
+
+                <p>
+                <strong>Username:</strong> {created_user.username}<br>
+                <strong>Email:</strong> {created_user.email}<br>
+                <strong>User ID:</strong> {created_user.id}<br>
+                <strong>Created:</strong> {created_user.created_at}
+                </p>
+                """
+            )
+            
+        except Exception as e:
+            print("Admin notification failed", e)
+
+        return created_user
+
 
 
     def login(self, username: str, password: str) -> TokenResponse:

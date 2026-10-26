@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     ALLOWED_ORIGINS: list[str] = []
     
-
+    admin_email: str
     brevo_api_key: str
     email_from: str
 

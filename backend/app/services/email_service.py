@@ -50,5 +50,30 @@ def send_password_reset_email(
                     </p>
                     """
     )
+    
+def send_admin_notification_email(
+    subject: str,
+    content: str,
+):
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key["api-key"] = settings.brevo_api_key
+
+    api_client = sib_api_v3_sdk.ApiClient(configuration)
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
+
+    email = sib_api_v3_sdk.SendSmtpEmail(
+        sender={
+            "name": "Neura AI Software Engineering Assistant",
+            "email": settings.email_from,
+        },
+        to=[
+            {
+                "email": settings.admin_email,
+            }
+        ],
+        subject=subject,
+        html_content=content,
+    )
 
     api_instance.send_transac_email(email)
