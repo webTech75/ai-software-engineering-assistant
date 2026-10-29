@@ -43,6 +43,7 @@ class LLMClient:
             #     max_tokens = settings.llm_max_tokens
 
             print(f"LLM request | " f"model={settings.LLM_MODEL} | ")
+            print("KEY PREFIX:", settings.LLM_API_KEY[:20])
 
             response = self.client.chat.completions.create(
                 model=settings.LLM_MODEL,
