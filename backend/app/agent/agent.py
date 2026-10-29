@@ -11,6 +11,14 @@ from app.analysis.storage import AnalysisStorage
 
 logger = logging.getLogger(__name__)
 
+NEURA_WELCOME_MESSAGE = """
+            👋 Hi, I'm Neura, your AI Software Engineering Assistant, 
+            powered by Meta AI's Muse Spark 1.3 model.
+
+            I can help you understand your codebase, debug issues, 
+            review architecture, explain concepts, and improve your software projects.
+            """
+
 
 class Agent:
     """
@@ -44,13 +52,7 @@ class Agent:
         project_directory: str | None = None,
         history: list[dict] | None = None,
     ) -> str:
-        NEURA_WELCOME_MESSAGE = """
-            👋 Hi, I'm Neura, your AI Software Engineering Assistant, 
-            powered by Meta AI's Muse Spark 1.3 model.
 
-            I can help you understand your codebase, debug issues, 
-            review architecture, explain concepts, and improve your software projects.
-            """
         # ---------------------------------------------------------
         # Execute required tools
         # ---------------------------------------------------------
