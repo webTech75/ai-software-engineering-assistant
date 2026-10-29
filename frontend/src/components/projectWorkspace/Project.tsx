@@ -19,7 +19,7 @@ import type { UploadResponse } from '@/types/chat'
 
 
 
-export function Project () {
+export function Project() {
   const { projectId } = useParams<{ projectId: string }>()
   const id = Number(projectId)
 
@@ -46,7 +46,7 @@ export function Project () {
     })
   }, [messages])
 
-  async function loadProject () {
+  async function loadProject() {
     if (!projectId) {
       setLoadingProject(false)
       return
@@ -64,7 +64,7 @@ export function Project () {
     }
   }
 
-  async function loadChatHistory () {
+  async function loadChatHistory() {
     if (!projectId) {
       setLoadingHistory(false)
       return
@@ -83,12 +83,10 @@ export function Project () {
   }
 
   // @ts-ignore
-  async function handleSubmit (event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     const text = message.trim()
-
-    const id = Number(projectId)
 
     if (!text || !projectId || !Number.isInteger(id) || id <= 0) {
       showToast('Enter a message and open a valid project.', 'error')
@@ -134,7 +132,7 @@ export function Project () {
         ...current,
         {
           role: 'assistant',
-          content: response.welcome.message
+          content: response.welcome?.message ?? ''
         }
       ])
 
@@ -147,8 +145,8 @@ export function Project () {
       ) : project ? (
         <>
           <ProjectHeader project={project} />
-          <ProjectAnalysis 
-            projectId={id} 
+          <ProjectAnalysis
+            projectId={id}
             hasProjectFiles={Boolean(project.project_directory)}
           />
           <div className='mt-6 flex w-full min-w-0 rounded-xl border'>
