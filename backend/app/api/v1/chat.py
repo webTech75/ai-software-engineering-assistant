@@ -177,12 +177,18 @@ def chat(
     # -------------------------------------------------
 
     agent = get_agent()
-    logger.info("CHAT PROJECT DIRECTORY: %s", project.project_directory)
-    response = agent.run(
-        message=request.message,
-        project_directory=project_directory,
-        history=history,
-    )
+    try:
+        response = agent.run(
+            message=request.message,
+            project_directory=project_directory,
+            history=history,
+        )
+
+        logger.info("AGENT RAW RESPONSE: %s", response)
+
+    except Exception as e:
+        logger.exception("CHAT AGENT FAILED")
+        raise e
 
     if not response:
 
