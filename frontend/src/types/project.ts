@@ -2,6 +2,9 @@ export interface Project {
   id: number
   name: string
   description?: string | null
+  project_directory?: string | null
+  owner_id?: number
+  created_at?: string
 }
 
 // Modal
