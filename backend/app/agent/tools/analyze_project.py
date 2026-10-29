@@ -1,32 +1,7 @@
 """
-===============================================================================
-File: analyze_project.py
-Path: app/agent/tools/analyze_project.py
+AI tool for analyzing software projects and generating engineering reports.
 
-Description:
-    Tool used by the AI assistant to analyze a software project.
-
-Responsibilities:
-    - Trigger project analysis.
-    - Execute ProjectScanner.
-    - Return engineering analysis report.
-
-Architecture:
-
-    AgentService
-          |
-          v
-    AnalyzeProjectTool
-          |
-          v
-    ProjectScanner
-          |
-          v
-    ProjectReportBuilder
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from typing import Any
@@ -84,33 +59,22 @@ class AnalyzeProjectTool(BaseTool):
                             ),
                         }
                     },
-                    "required": [
-                        "project_directory"
-                    ],
+                    "required": ["project_directory"],
                 },
             },
         }
 
-    def execute(
-        self,
-        project_directory: str,
-        **kwargs
-    ) -> dict[str, Any]:
+    def execute(self, project_directory: str, **kwargs) -> dict[str, Any]:
         """
         Run project analysis.
         """
-        
-        print(
-            "ANALYZE TOOL DIRECTORY:",
-            project_directory
-        ) 
+
+        print("ANALYZE TOOL DIRECTORY:", project_directory)
 
         try:
             scanner = ProjectScanner()
 
-            report = scanner.scan(
-                project_directory
-            )
+            report = scanner.scan(project_directory)
 
             return {
                 "success": True,

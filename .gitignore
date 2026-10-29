@@ -1,54 +1,138 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+# ============================================================
+# Neura - AI Software Engineering Assistant
+# Root Git Ignore (Backend + Frontend)
+# ============================================================
 
-# Virtual Environments
+
+# ------------------------------------------------------------
+# Environment files / secrets
+# ------------------------------------------------------------
+
+.env
+.env.*
+!.env.example
+
+backend/.env
+frontend/.env
+
+
+# ------------------------------------------------------------
+# Python Backend
+# ------------------------------------------------------------
+
+# Virtual environments
 .venv/
 venv/
+env/
 
-# Environment Variables
-.env
+backend/.venv/
+backend/venv/
+backend/t.py
 
-# Databases
-*.db
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Python Packaging
-*.egg-info/
-.eggs/
+backend/**/__pycache__/
 
-# Test Coverage
+# Testing / tooling cache
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage
 .coverage
 htmlcov/
 
-# Type Checking
-.mypy_cache/
 
-# Linting
-.ruff_cache/
+# ------------------------------------------------------------
+# Backend Database
+# ------------------------------------------------------------
 
-# Runtime uploads
-uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+backend/assistant.db
+
+
+# ------------------------------------------------------------
+# Uploaded user projects
+# ------------------------------------------------------------
+
 backend/uploads/
 
-t.py
 
-# Node
-node_modules/
+# ------------------------------------------------------------
+# Logs
+# ------------------------------------------------------------
 
-# IDE
+*.log
+logs/
+
+
+# ------------------------------------------------------------
+# Frontend (React + Vite)
+# ------------------------------------------------------------
+
+frontend/node_modules/
+frontend/dist/
+
+# Vite cache
+frontend/.vite/
+
+# Frontend environment files
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+
+
+# ------------------------------------------------------------
+# Build output
+# ------------------------------------------------------------
+
+dist/
+build/
+
+
+# ------------------------------------------------------------
+# IDE files
+# ------------------------------------------------------------
+
 .vscode/
 .idea/
 
-# OS
+*.swp
+*.swo
+
+
+# ------------------------------------------------------------
+# OS files
+# ------------------------------------------------------------
+
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
 
-# Build
-dist/
-build/
+# ------------------------------------------------------------
+# Temporary files
+# ------------------------------------------------------------
+
+*.tmp
+*.temp
+*.bak
+
+
+# ------------------------------------------------------------
+# Docker
+# ------------------------------------------------------------
+
+docker-compose.override.yml
+
+
+# ------------------------------------------------------------
+# Alembic / Python generated files
+# ------------------------------------------------------------
+
+backend/alembic/__pycache__/

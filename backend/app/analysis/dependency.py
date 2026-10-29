@@ -1,3 +1,9 @@
+"""
+Analyzer for detecting project dependencies and package managers.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 
 from app.analysis.base import BaseAnalyzer
@@ -20,9 +26,7 @@ class DependencyAnalyzer(BaseAnalyzer):
         dependency_file = None
 
         # Python dependencies
-        requirements_files = list(
-            root.rglob("requirements.txt")
-        )
+        requirements_files = list(root.rglob("requirements.txt"))
 
         if requirements_files:
 
@@ -40,25 +44,18 @@ class DependencyAnalyzer(BaseAnalyzer):
 
                 line = line.strip()
 
-                if (
-                    line
-                    and not line.startswith("#")
-                ):
+                if line and not line.startswith("#"):
                     dependencies.append(line)
 
         # Node dependencies
-        package_files = list(
-            root.rglob("package.json")
-        )
+        package_files = list(root.rglob("package.json"))
 
         if package_files:
 
             manager = "npm"
             dependency_file = "package.json"
 
-            dependencies.append(
-                "package.json detected"
-            )
+            dependencies.append("package.json detected")
 
         return {
             "dependencies": {

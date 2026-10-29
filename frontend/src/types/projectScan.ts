@@ -10,11 +10,15 @@ export interface ProjectScan {
   }
 
   technology: {
-    language: string | null
-    framework: string | null
+    languages: string[]
+    frameworks: string[]
     database: string | null
-    orm: string | null
-    migration_tool: string | null
+    orms: string[]
+    migration_tools: string[]
+    package_manager: string | null
+    build_tools: string[]
+    testing_tools: string[]
+    styling_tools: string[]
   }
 
   structure: {

@@ -4,13 +4,10 @@ File:
     app/services/chat_service.py
 
 Description:
-    Service layer for chat operations.
+    Chat operations service layer.
 
-Responsibilities:
-    - Create chat messages.
-    - Load conversation history.
-    - Support general and project conversations.
-
+Author:
+    Amr Elhabbal
 ===============================================================================
 """
 
@@ -20,6 +17,7 @@ from app.models.chat_message import ChatMessage
 from app.repositories.chat_repository import ChatRepository
 
 MAX_CHAT_LENGTH = 10000
+
 
 class ChatService:
     """
@@ -34,15 +32,11 @@ class ChatService:
             project_id=<project id>
     """
 
-
-
     def __init__(
         self,
         db: Session,
     ):
         self.repository = ChatRepository(db)
-
-
 
     def create_message(
         self,
@@ -55,13 +49,10 @@ class ChatService:
 
         project_id can be None for general conversations.
         """
-        #MAX_MESSAGE_LENGTH = 20000
+        # MAX_MESSAGE_LENGTH = 20000
 
         if len(content) > MAX_CHAT_LENGTH:
-            content = (
-                content[:MAX_CHAT_LENGTH]
-                + "\n\n[Message truncated]"
-            )
+            content = content[:MAX_CHAT_LENGTH] + "\n\n[Message truncated]"
 
         message = ChatMessage(
             project_id=project_id,
@@ -69,12 +60,7 @@ class ChatService:
             content=content,
         )
 
-
-        return self.repository.create(
-            message
-        )
-
-
+        return self.repository.create(message)
 
     def get_messages(
         self,
@@ -90,7 +76,4 @@ class ChatService:
             Project conversation history.
         """
 
-
-        return self.repository.get_messages(
-            project_id
-        )
+        return self.repository.get_messages(project_id)

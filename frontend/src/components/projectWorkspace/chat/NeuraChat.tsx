@@ -41,7 +41,8 @@ export function NeuraChat ({
           <h2 className='text-xl font-semibold'>Neura</h2>
 
           <p className='text-sm text-muted-foreground'>
-            Your AI Software Engineering Assistant
+             👋 Your AI Software Engineering Assistant <br />
+             Powered by Meta AI's Muse Spark 1.3 model to analyze, understand, and assist with your software projects.
           </p>
         </div>
       </div>

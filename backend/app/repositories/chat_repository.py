@@ -4,20 +4,21 @@ File:
     app/repositories/chat_repository.py
 
 Description:
-    Repository layer for chat storage.
+    Repository layer for managing chat message persistence.
 
 Responsibilities:
-    - Save chat messages.
-    - Load general conversations.
-    - Load project conversations.
+    - Store chat messages.
+    - Retrieve general conversations.
+    - Retrieve project-specific conversations.
 
+Author:
+    Amr Elhabbal
 ===============================================================================
 """
 
 from sqlalchemy.orm import Session
 
 from app.models.chat_message import ChatMessage
-
 
 
 class ChatRepository:
@@ -33,15 +34,11 @@ class ChatRepository:
             Project conversation
     """
 
-
-
     def __init__(
         self,
         db: Session,
     ):
         self.db = db
-
-
 
     def create(
         self,
@@ -51,17 +48,13 @@ class ChatRepository:
         Save chat message.
         """
 
-
         self.db.add(message)
 
         self.db.commit()
 
         self.db.refresh(message)
 
-
         return message
-
-
 
     def get_messages(
         self,
@@ -77,28 +70,18 @@ class ChatRepository:
             Project conversation.
         """
 
-
-        query = (
-            self.db.query(ChatMessage)
-        )
-
+        query = self.db.query(ChatMessage)
 
         if project_id is None:
 
-            query = query.filter(
-                ChatMessage.project_id.is_(None)
-            )
+            query = query.filter(ChatMessage.project_id.is_(None))
 
         else:
 
-            query = query.filter(
-                ChatMessage.project_id == project_id
-            )
-
+            query = query.filter(ChatMessage.project_id == project_id)
 
         messages = (
-            query
-            .order_by(
+            query.order_by(
                 ChatMessage.created_at.desc(),
                 ChatMessage.id.desc(),
             )
@@ -106,8 +89,6 @@ class ChatRepository:
             .all()
         )
 
-
         messages.reverse()
-
 
         return messages

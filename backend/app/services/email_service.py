@@ -1,3 +1,16 @@
+"""
+===============================================================================
+File:
+    app/services/email_service.py
+
+Description:
+    Email notification service.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 import sib_api_v3_sdk
 
 from app.core.config import settings
@@ -48,9 +61,10 @@ def send_password_reset_email(
                     <p>
                     AI Software Engineering Assistant
                     </p>
-                    """
+                    """,
     )
-    
+
+
 def send_admin_notification_email(
     subject: str,
     content: str,

@@ -1,27 +1,37 @@
 """
 ===============================================================================
-File: projects.py
-Path: app/api/v1/projects.py
+File:
+    app/api/v1/chat.py
 
 Description:
-    Provides endpoints for managing software projects.
+    Chat API endpoint for interacting with the Neura AI agent.
 
 Responsibilities:
-    - Create projects.
-    - Retrieve projects.
-    - Update project information.
-    - Delete projects.
-    - Ensure users can only access their own projects.
+    - Receive user messages.
+    - Load project context and conversation history.
+    - Execute the AI agent.
+    - Save and return responses.
 
-Notes:
-    - All endpoints require authentication.
-    - Project ownership is verified before any operation.
+Does NOT:
+    - Execute tools directly.
+    - Analyze projects.
+    - Communicate with the LLM directly.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
-from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Query, HTTPException
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    Response,
+    status,
+    UploadFile,
+    File,
+    Query,
+    HTTPException,
+)
 from sqlalchemy.orm import Session
 
 from app.utils.file_storage import save_uploaded_file, extract_zip
@@ -31,20 +41,26 @@ from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.schemas.project_scan import ProjectScanResponse
 from app.api.dependencies import get_current_user
 from app.services.project_service import ProjectService
-from app.services.symbol_index_service import SymbolIndexService
-from app.services.file_index_service import FileIndexService
-from app.agent.tools.list_files import ListFilesTool
 from app.agent.tools.read_file import ReadFileTool
 from app.agent.tools.search_text import SearchTextTool
-from app.models.project import Project
-from app.services.project_index_service import ProjectIndexService
-from app.api.dependencies import get_project_index_service
+from app.agent.agent import Agent
+from app.ai.llm.client import LLMClient
+from app.analysis.scanner import ProjectScanner
+from app.analysis.storage import AnalysisStorage
+from app.analysis.context_builder import ProjectContextBuilder
+from app.utils.file_storage import get_project_directory
+
+llm_client = LLMClient()
 
 
 router = APIRouter(
     prefix="/projects",
     tags=["Projects"],
 )
+
+
+def get_agent() -> Agent:
+    return Agent(llm=llm_client)
 
 
 def get_project_service(db: Session = Depends(get_db)) -> ProjectService:
@@ -123,7 +139,6 @@ def upload_project_file(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     service: ProjectService = Depends(get_project_service),
-    index_service: ProjectIndexService = Depends(get_project_index_service),
 ):
     # Verify project exists and belongs to the user
     project = service.get_project(project_id, current_user)
@@ -132,19 +147,48 @@ def upload_project_file(
 
     if file.filename.lower().endswith(".zip"):
         extracted_path = extract_zip(project.id, file_path)
+        from pathlib import Path
+
+        print("EXTRACTED PATH:", extracted_path)
+
+        print("FILES AFTER EXTRACT:", list(Path(extracted_path).rglob("*"))[:20])
 
         project.project_directory = extracted_path
         service.save(project)
+        print("FILES BEFORE SCAN:", list(Path(extracted_path).rglob("*"))[:20])
+        scanner = ProjectScanner()
 
-        result = index_service.reindex_project(
-            project_id=project.id,
-            project_directory=extracted_path,
+        analysis = scanner.scan(extracted_path)
+
+        # Build AI context once
+        context = ProjectContextBuilder.build(
+            project.name,
+            analysis,
+        )
+
+        # Store analysis + context
+        analysis_data = {
+            "report": analysis,
+            "context": context,
+        }
+
+        AnalysisStorage.save(
+            str(get_project_directory(project.id)),
+            analysis_data,
+        )
+
+        agent = get_agent()
+
+        welcome = agent.get_project_welcome(
+            project.name,
+            context,
         )
 
         return {
-            "message": "ZIP uploaded and indexed successfully.",
+            "message": "ZIP uploaded successfully.",
+            "project_id": project.id,
             "project_directory": extracted_path,
-            **result,
+            "welcome": welcome,
         }
 
     return {
@@ -156,7 +200,6 @@ def upload_project_file(
 
 @router.get(
     "/{project_id}/scan",
-    response_model=ProjectScanResponse,
 )
 def scan_project_endpoint(
     project_id: int,
@@ -201,107 +244,3 @@ def search_project(
     tool = SearchTextTool()
 
     return tool.execute(project, query)
-
-
-# @router.post("/{project_id}/index-symbols")
-# def index_project_symbols(
-#     project_id: int,
-#     db: Session = Depends(get_db),
-# ):
-
-#     project = (
-#         db.query(Project)
-#         .filter(Project.id == project_id)
-#         .first()
-#     )
-
-#     if not project:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Project not found"
-#         )
-
-
-#     service = SymbolIndexService(db)
-
-#     symbols = service.index_project(
-#         project_id=project.id,
-#         project_directory=project.project_directory,
-#     )
-
-
-#     return {
-#         "message": "Project symbols indexed successfully",
-#         "symbols_indexed": len(symbols),
-#     }
-
-# @router.post("/{project_id}/index-files")
-# def index_project_files(
-#     project_id: int,
-#     db: Session = Depends(get_db),
-# ):
-#     project = db.query(Project).filter(
-#         Project.id == project_id
-#     ).first()
-
-#     if not project:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Project not found"
-#         )
-
-#     service = FileIndexService(db)
-
-#     files = service.index_project(
-#         project.id,
-#         project.project_directory
-#     )
-
-#     return {
-#         "message": "Project files indexed successfully",
-#         "files_indexed": len(files)
-#     }
-
-
-@router.post("/{project_id}/reindex")
-def reindex_project(
-    project_id: int,
-    db: Session = Depends(get_db),
-):
-    project = (
-        db.query(Project)
-        .filter(Project.id == project_id)
-        .first()
-    )
-
-    if not project:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
-        )
-
-    service = ProjectIndexService(db)
-
-    result = service.reindex_project(
-        project_id=project.id,
-        project_directory=project.project_directory,
-    )
-
-    return {
-        "message": "Project reindexed successfully",
-        **result,
-    }
-
-@router.get("/{project_id}/index-status")
-def get_project_index_status(
-    project_id: int,
-    current_user: User = Depends(get_current_user),
-    project_service: ProjectService = Depends(get_project_service),
-    index_service: ProjectIndexService = Depends(get_project_index_service),
-):
-    project_service.get_project(
-        project_id,
-        current_user,
-    )
-
-    return index_service.get_index_status(project_id)

@@ -1,3 +1,13 @@
+"""
+Database model for password reset tokens.
+
+Stores temporary tokens used for
+secure password recovery workflows.
+
+Author:
+    Amr Elhabbal
+"""
+
 from sqlalchemy import (
     Boolean,
     Column,

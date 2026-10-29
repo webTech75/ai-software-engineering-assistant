@@ -1,3 +1,22 @@
+"""
+===============================================================================
+File:
+    app/models/user.py
+
+Description:
+    Defines the user database model for authentication and ownership.
+
+Responsibilities:
+    - Store user account information.
+    - Store encrypted password data.
+    - Manage user projects.
+    - Manage password reset relationships.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 from datetime import datetime
 
 from sqlalchemy import String, DateTime
@@ -11,27 +30,13 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    username: Mapped[str] = mapped_column(
-        String(50),
-        unique=True,
-        nullable=False
-    )
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
-    email: Mapped[str] = mapped_column(
-        String(255),
-        unique=True,
-        nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
-    password_hash: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False
-    )
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     projects = relationship(
         "Project",

@@ -1,25 +1,7 @@
 """
-===============================================================================
-File:
-    app/agent/tools/read_file.py
+AI tool for reading project files through FileManager.
 
-Description:
-    Reads the contents of a project file.
-
-Responsibilities:
-    - Expose file reading capability to the AI agent.
-    - Delegate file access to FileManager.
-    - Return file contents.
-
-Does NOT:
-    - Access filesystem directly.
-    - Validate file security rules.
-    - Manage project objects.
-    - Perform AI reasoning.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -39,11 +21,9 @@ class ReadFileTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "read_file"
-
 
     @property
     def description(self) -> str:
@@ -52,7 +32,6 @@ class ReadFileTool(BaseTool):
             "Use this tool before answering questions "
             "about a file or before modifying it."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -66,10 +45,7 @@ class ReadFileTool(BaseTool):
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": (
-                                "Relative path of the file "
-                                "to read."
-                            ),
+                            "description": ("Relative path of the file " "to read."),
                         },
                     },
                     "required": [
@@ -79,7 +55,6 @@ class ReadFileTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,

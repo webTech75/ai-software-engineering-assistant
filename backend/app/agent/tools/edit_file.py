@@ -1,25 +1,9 @@
 """
-===============================================================================
-File:
-    app/agent/tools/edit_file.py
+AI tool for editing existing project files through FileManager.
 
-Description:
-    Updates existing files inside the project.
+Status: Under Construction
 
-Responsibilities:
-    - Expose file editing capability to the AI agent.
-    - Pass edit requests to FileManager.
-    - Return edit results.
-
-Does NOT:
-    - Access filesystem directly.
-    - Validate file paths directly.
-    - Manage project context.
-    - Execute AI reasoning.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -39,11 +23,9 @@ class EditFileTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "edit_file"
-
 
     @property
     def description(self) -> str:
@@ -52,7 +34,6 @@ class EditFileTool(BaseTool):
             "Use this tool when modifying an existing project file. "
             "Do not use this tool to create new files."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -66,22 +47,15 @@ class EditFileTool(BaseTool):
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": (
-                                "Relative path of the file "
-                                "to edit."
-                            ),
+                            "description": ("Relative path of the file " "to edit."),
                         },
                         "old_text": {
                             "type": "string",
-                            "description": (
-                                "Existing text to replace."
-                            ),
+                            "description": ("Existing text to replace."),
                         },
                         "new_text": {
                             "type": "string",
-                            "description": (
-                                "Replacement text."
-                            ),
+                            "description": ("Replacement text."),
                         },
                     },
                     "required": [
@@ -93,7 +67,6 @@ class EditFileTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,

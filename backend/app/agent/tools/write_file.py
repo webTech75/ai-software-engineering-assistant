@@ -1,25 +1,9 @@
 """
-===============================================================================
-File:
-    app/agent/tools/write_file.py
+AI tool for creating and updating project files through FileManager.
 
-Description:
-    Creates or updates a project file.
+Status: Under Construction
 
-Responsibilities:
-    - Expose file writing capability to the AI agent.
-    - Delegate filesystem operations to FileManager.
-    - Return write results.
-
-Does NOT:
-    - Access filesystem directly.
-    - Validate file security rules.
-    - Manage project context.
-    - Perform AI reasoning.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -39,11 +23,9 @@ class WriteFileTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "write_file"
-
 
     @property
     def description(self) -> str:
@@ -51,7 +33,6 @@ class WriteFileTool(BaseTool):
             "Create a new file or replace the contents "
             "of an existing file inside the project."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -65,22 +46,16 @@ class WriteFileTool(BaseTool):
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": (
-                                "Relative path of the file "
-                                "to write."
-                            ),
+                            "description": ("Relative path of the file " "to write."),
                         },
                         "content": {
                             "type": "string",
-                            "description": (
-                                "Complete file contents."
-                            ),
+                            "description": ("Complete file contents."),
                         },
                         "overwrite": {
                             "type": "boolean",
                             "description": (
-                                "Whether to overwrite "
-                                "an existing file."
+                                "Whether to overwrite " "an existing file."
                             ),
                             "default": False,
                         },
@@ -93,7 +68,6 @@ class WriteFileTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,

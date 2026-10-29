@@ -4,18 +4,15 @@ File: project_service.py
 Path: app/services/project_service.py
 
 Description:
-    Contains the business logic for project management.
+    Handles project management business logic.
 
 Responsibilities:
-    - Create projects.
-    - Retrieve projects.
-    - Update project information.
-    - Delete projects.
-    - Coordinate repository operations.
+    - Create, retrieve, update, and delete projects.
+    - Validate project ownership.
+    - Manage project analysis and file storage.
 
 Notes:
-    - Business rules belong here.
-    - Database access is delegated to the repository layer.
+    - Uses repository layer for database operations.
 
 Author:
     Amr Elhabbal
@@ -23,14 +20,14 @@ Author:
 """
 
 from fastapi import HTTPException, status
-from pathlib import Path
+
+from sqlalchemy.orm import Session
 
 from app.models.project import Project
 from app.models.user import User
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.project import ProjectCreate, ProjectUpdate
-from sqlalchemy.orm import Session
-from app.analysis.scanner import ProjectScanner
+from app.analysis.storage import AnalysisStorage
 from app.utils.file_storage import (
     get_project_directory,
     get_existing_project_directory,
@@ -40,6 +37,7 @@ from app.utils.file_storage import (
 class ProjectService:
 
     def __init__(self, db: Session):
+        self.db = db
         self.repository = ProjectRepository(db)
 
     def create_project(
@@ -61,9 +59,7 @@ class ProjectService:
         current_user: User,
     ) -> list[Project]:
 
-        return self.repository.get_all_by_owner(
-            current_user.id
-        )
+        return self.repository.get_all_by_owner(current_user.id)
 
     def get_project(
         self,
@@ -101,7 +97,6 @@ class ProjectService:
         self.remove_project_files(project)
         self.repository.delete(project)
 
-
     def update_project(
         self,
         project_id: int,
@@ -123,21 +118,44 @@ class ProjectService:
                 detail="You are not allowed to update this project.",
             )
 
-        return self.repository.update(project, data)
+        return self.repository.update(
+            project,
+            data,
+        )
 
     def scan_project(
         self,
         project_id: int,
         current_user,
     ):
-        project = self.get_project(project_id, current_user)
+        """
+        Return existing project analysis.
+
+        Analysis is generated during upload.
+        This endpoint only retrieves stored results.
+        """
+
+        project = self.get_project(
+            project_id,
+            current_user,
+        )
 
         project_dir = get_project_directory(project.id)
 
-        scanner = ProjectScanner()
+        analysis_data = AnalysisStorage.load(str(project_dir))
 
-        return scanner.scan(str(project_dir))
-    
+        if not analysis_data:
+            return {
+                "status": "not_analyzed",
+                "message": "Upload a project to generate analysis.",
+            }
+
+        report = analysis_data.get("report")
+
+        if not report:
+            raise ValueError("Project analysis report is missing.")
+
+        return report
 
     def update_project_directory(
         self,
@@ -147,11 +165,13 @@ class ProjectService:
         project.project_directory = directory
         self.repository.commit()
 
+    def save(
+        self,
+        project: Project,
+    ) -> Project:
 
-    def save(self, project: Project) -> Project:
         return self.repository.save(project)
 
-    
     def remove_project_files(
         self,
         project: Project,
@@ -161,4 +181,5 @@ class ProjectService:
 
         if project_dir.exists():
             import shutil
+
             shutil.rmtree(project_dir)

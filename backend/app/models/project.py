@@ -1,3 +1,21 @@
+"""
+===============================================================================
+File:
+    app/models/project.py
+
+Description:
+    Defines the project database model.
+
+Responsibilities:
+    - Store user software projects.
+    - Track project metadata and indexing status.
+    - Manage project files and chat relationships.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, func
@@ -6,6 +24,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 from app.models.chat_message import ChatMessage
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -69,9 +88,7 @@ class Project(Base):
         back_populates="projects",
     )
     files = relationship(
-        "ProjectFile",
-        back_populates="project",
-        cascade="all, delete-orphan"
+        "ProjectFile", back_populates="project", cascade="all, delete-orphan"
     )
     messages = relationship(
         "ChatMessage",

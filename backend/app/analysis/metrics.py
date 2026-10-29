@@ -1,14 +1,19 @@
+"""
+Analyzer for collecting project code metrics and statistics.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 import ast
 
 from app.analysis.base import BaseAnalyzer
-from app.analysis.constants import IGNORED_DIRECTORIES
+from app.utils.should_ignore import should_ignore
 
 
 class MetricsAnalyzer(BaseAnalyzer):
 
     name = "MetricsAnalyzer"
-
 
     def analyze(self, project_directory):
 
@@ -23,19 +28,16 @@ class MetricsAnalyzer(BaseAnalyzer):
             "total_functions": 0,
             "total_classes": 0,
             "total_imports": 0,
-            "files": []
+            "files": [],
         }
-
 
         for file in root.rglob("*"):
 
-            if self.should_ignore(file):
+            if should_ignore(file):
                 continue
-
 
             if not file.is_file():
                 continue
-
 
             if file.suffix == ".py":
 
@@ -52,20 +54,9 @@ class MetricsAnalyzer(BaseAnalyzer):
                 result["total_classes"] += metrics["classes"]
                 result["total_imports"] += metrics["imports"]
 
+                result["files"].append({"file": str(file), **metrics})
 
-                result["files"].append(
-                    {
-                        "file": str(file),
-                        **metrics
-                    }
-                )
-
-
-        return {
-            "metrics": result
-        }
-
-
+        return {"metrics": result}
 
     def analyze_python_file(self, file):
 
@@ -76,21 +67,16 @@ class MetricsAnalyzer(BaseAnalyzer):
             "blank_lines": 0,
             "functions": 0,
             "classes": 0,
-            "imports": 0
+            "imports": 0,
         }
-
 
         try:
 
-            content = file.read_text(
-                encoding="utf-8",
-                errors="ignore"
-            )
+            content = file.read_text(encoding="utf-8", errors="ignore")
 
             lines = content.splitlines()
 
             metrics["lines"] = len(lines)
-
 
             for line in lines:
 
@@ -105,48 +91,20 @@ class MetricsAnalyzer(BaseAnalyzer):
                 else:
                     metrics["code_lines"] += 1
 
-
-
             tree = ast.parse(content)
-
 
             for node in ast.walk(tree):
 
-                if isinstance(
-                    node,
-                    ast.FunctionDef
-                ):
+                if isinstance(node, ast.FunctionDef):
                     metrics["functions"] += 1
 
-
-                elif isinstance(
-                    node,
-                    ast.ClassDef
-                ):
+                elif isinstance(node, ast.ClassDef):
                     metrics["classes"] += 1
 
-
-                elif isinstance(
-                    node,
-                    (
-                        ast.Import,
-                        ast.ImportFrom
-                    )
-                ):
+                elif isinstance(node, (ast.Import, ast.ImportFrom)):
                     metrics["imports"] += 1
-
 
         except Exception:
             pass
 
-
         return metrics
-
-
-
-    def should_ignore(self, path):
-
-        return any(
-            part in IGNORED_DIRECTORIES
-            for part in path.parts
-        )

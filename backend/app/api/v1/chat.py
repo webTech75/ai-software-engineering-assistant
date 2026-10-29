@@ -12,12 +12,42 @@ Responsibilities:
     - Load conversation history.
     - Execute AI agent.
     - Save messages.
-    - Return response.
+    - Return responses.
 
 Does NOT:
-    - Execute tools.
-    - Manage planning.
-    - Manage LLM communication.
+    - Execute tools directly.
+    - Perform project analysis.
+    - Communicate with LLM directly.
+
+
+Architecture:
+
+    User
+      |
+      v
+    Chat API
+      |
+      v
+    Agent
+      |
+      +----------------+
+      |                |
+      v                v
+    Tools             LLM
+      |
+      v
+Project Analysis
+      |
+      v
+Analysis Results
+      |
+      +----------------+
+                       |
+                       v
+                  Final Response
+Author:
+    Amr Elhabbal
+    Powered by Meta AI Muse
 
 ===============================================================================
 """
@@ -27,32 +57,26 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-
 from app.db.database import get_db
 from app.models.project import Project
-
 
 from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
 )
 
-
 from app.ai.llm.client import LLMClient
 from app.agent.agent import Agent
 
 from app.services.chat_service import ChatService
 
-
 logger = logging.getLogger(__name__)
-
 
 
 router = APIRouter(
     prefix="/chat",
     tags=["Chat"],
 )
-
 
 
 # -------------------------------------------------
@@ -62,23 +86,22 @@ router = APIRouter(
 llm_client = LLMClient()
 
 
-
 def get_agent() -> Agent:
     """
     Create AI agent.
 
-    Agent owns:
-        - Router
-        - Planner
-        - Executor
+    Agent manages:
+        - tool execution
+        - LLM orchestration
+        - response generation
 
-    API only provides LLM dependency.
+    API only provides
+    required dependencies.
     """
 
     return Agent(
         llm=llm_client,
     )
-
 
 
 def get_project(
@@ -89,14 +112,7 @@ def get_project(
     Load project by id.
     """
 
-    project = (
-        db.query(Project)
-        .filter(
-            Project.id == project_id
-        )
-        .first()
-    )
-
+    project = db.query(Project).filter(Project.id == project_id).first()
 
     if not project:
 
@@ -105,9 +121,7 @@ def get_project(
             detail="Project not found",
         )
 
-
     return project
-
 
 
 @router.post(
@@ -124,10 +138,7 @@ def chat(
 
     chat_service = ChatService(db)
 
-
     project_directory = None
-
-
 
     # -------------------------------------------------
     # Load project context
@@ -140,21 +151,13 @@ def chat(
             request.project_id,
         )
 
-
-        project_directory = (
-            project.project_directory
-        )
-
-
+        project_directory = project.project_directory
 
     # -------------------------------------------------
     # Load conversation history
     # -------------------------------------------------
 
-    history_messages = chat_service.get_messages(
-        project_id=request.project_id
-    )
-
+    history_messages = chat_service.get_messages(project_id=request.project_id)
 
     history = [
         {
@@ -164,41 +167,28 @@ def chat(
         for message in history_messages
     ]
 
-
     logger.info(
         "Loaded chat history: %s messages",
         len(history),
     )
-
-
 
     # -------------------------------------------------
     # Execute Agent
     # -------------------------------------------------
 
     agent = get_agent()
-
-
+    logger.info("CHAT PROJECT DIRECTORY: %s", project.project_directory)
     response = agent.run(
         message=request.message,
         project_directory=project_directory,
         history=history,
     )
 
-
     if not response:
 
-        response = (
-            "I was unable to generate a response. "
-            "Please try again."
-        )
+        response = "I was unable to generate a response. " "Please try again."
 
-
-    logger.info(
-        "AI response generated successfully"
-    )
-
-
+    logger.info("AI response generated successfully")
 
     # -------------------------------------------------
     # Save conversation
@@ -210,19 +200,13 @@ def chat(
         content=request.message,
     )
 
-
     chat_service.create_message(
         project_id=request.project_id,
         role="assistant",
         content=response,
     )
 
-
-
-    return ChatResponse(
-        answer=response
-    )
-
+    return ChatResponse(answer=response)
 
 
 @router.get(
@@ -236,10 +220,7 @@ def get_chat_history(
     Get conversation history.
     """
 
-
     chat_service = ChatService(db)
-
-
 
     if project_id is not None:
 
@@ -248,12 +229,7 @@ def get_chat_history(
             project_id,
         )
 
-
-
-    messages = chat_service.get_messages(
-        project_id=project_id
-    )
-
+    messages = chat_service.get_messages(project_id=project_id)
 
     return [
         {

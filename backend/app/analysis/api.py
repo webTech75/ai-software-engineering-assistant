@@ -1,8 +1,14 @@
+"""
+Analyzer for detecting and reporting project API endpoints.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 import re
 
 from app.analysis.base import BaseAnalyzer
-from app.analysis.constants import IGNORED_DIRECTORIES
+from app.utils.should_ignore import should_ignore
 
 
 class APIAnalyzer(BaseAnalyzer):
@@ -26,10 +32,7 @@ class APIAnalyzer(BaseAnalyzer):
 
         for path in root.rglob("*.py"):
 
-            if any(
-                part in IGNORED_DIRECTORIES
-                for part in path.parts
-            ):
+            if should_ignore(path):
                 continue
 
             try:
@@ -41,13 +44,9 @@ class APIAnalyzer(BaseAnalyzer):
             except Exception:
                 continue
 
-
             for method in self.HTTP_METHODS:
 
-                pattern = (
-                    rf"@.*\.{method}\("
-                    r"[\"'](.*?)[\"']"
-                )
+                pattern = rf"@.*\.{method}\(" r"[\"'](.*?)[\"']"
 
                 matches = re.findall(
                     pattern,
@@ -60,12 +59,9 @@ class APIAnalyzer(BaseAnalyzer):
                         {
                             "method": method.upper(),
                             "path": route,
-                            "file": str(
-                                path.relative_to(root)
-                            ),
+                            "file": str(path.relative_to(root)),
                         }
                     )
-
 
         return {
             "api": {

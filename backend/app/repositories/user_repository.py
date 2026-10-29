@@ -1,19 +1,18 @@
 """
 ===============================================================================
-File: user_repository.py
-Path: app/repositories/user_repository.py
+File:
+    app/repositories/user_repository.py
 
 Description:
-    Provides database access operations for User entities.
+    Repository layer for managing User database operations.
 
 Responsibilities:
     - Create users.
     - Retrieve users.
-    - Update users.
-    - Delete users.
+    - Manage user persistence operations.
 
 Notes:
-    - Contains persistence logic only.
+    - Contains database access logic only.
     - Business logic belongs in the service layer.
 
 Author:
@@ -33,19 +32,11 @@ class UserRepository:
 
     def get_by_email(self, email: str) -> User | None:
         email = email.strip().lower()
-        return (
-            self.db.query(User)
-            .filter(User.email == email)
-            .first()
-        )
+        return self.db.query(User).filter(User.email == email).first()
 
     def get_by_username(self, username: str) -> User | None:
         username = username.strip().lower()
-        return (
-            self.db.query(User)
-            .filter(User.username == username)
-            .first()
-        )
+        return self.db.query(User).filter(User.username == username).first()
 
     def create(self, user: User) -> User:
         self.db.add(user)
@@ -53,10 +44,5 @@ class UserRepository:
         self.db.refresh(user)
         return user
 
-
     def get_by_id(self, user_id: int) -> User | None:
-        return (
-            self.db.query(User)
-            .filter(User.id == user_id)
-            .first()
-        )
+        return self.db.query(User).filter(User.id == user_id).first()

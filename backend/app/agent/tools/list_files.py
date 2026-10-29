@@ -1,25 +1,7 @@
 """
-===============================================================================
-File:
-    app/agent/tools/list_files.py
+AI tool for listing project files and inspecting structure through FileManager.
 
-Description:
-    Lists project files.
-
-Responsibilities:
-    - Expose project file listing capability to the AI agent.
-    - Request file listing from FileManager.
-    - Return discovered project files.
-
-Does NOT:
-    - Access filesystem directly.
-    - Apply filesystem rules.
-    - Manage project objects.
-    - Perform AI reasoning.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -39,11 +21,9 @@ class ListFilesTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "list_files"
-
 
     @property
     def description(self) -> str:
@@ -52,7 +32,6 @@ class ListFilesTool(BaseTool):
             "Use this tool when inspecting "
             "the project structure."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -68,7 +47,6 @@ class ListFilesTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,

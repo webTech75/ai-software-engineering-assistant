@@ -1,3 +1,22 @@
+"""
+===============================================================================
+File:
+    app/repositories/project_repository.py
+
+Description:
+    Repository layer for managing project persistence.
+
+Responsibilities:
+    - Create and retrieve projects.
+    - Update project information.
+    - Delete projects.
+    - Manage project database operations.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 from sqlalchemy.orm import Session
 
 from app.models.project import Project
@@ -16,18 +35,10 @@ class ProjectRepository:
         return project
 
     def get_all_by_owner(self, owner_id: int) -> list[Project]:
-        return (
-            self.db.query(Project)
-            .filter(Project.owner_id == owner_id)
-            .all()
-        )
+        return self.db.query(Project).filter(Project.owner_id == owner_id).all()
 
     def get_by_id(self, project_id: int) -> Project | None:
-        return (
-            self.db.query(Project)
-            .filter(Project.id == project_id)
-            .first()
-        )
+        return self.db.query(Project).filter(Project.id == project_id).first()
 
     def delete(self, project: Project) -> None:
         self.db.delete(project)
@@ -42,7 +53,7 @@ class ProjectRepository:
         self.db.commit()
         self.db.refresh(project)
 
-        return project   
+        return project
 
     def save(self, project: Project) -> Project:
         self.db.add(project)

@@ -1,3 +1,9 @@
+"""
+Defines files, directories, and extensions excluded from project analysis.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 IGNORED_DIRECTORIES = {
     ".git",
     ".venv",
@@ -9,6 +15,8 @@ IGNORED_DIRECTORIES = {
     ".next",
     "coverage",
 }
+
+IGNORED_FILES = {".env", "assistant.db", ".DS_Store", "LICENSE"}
 
 
 IGNORED_EXTENSIONS = {

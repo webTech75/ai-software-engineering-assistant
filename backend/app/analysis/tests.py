@@ -1,7 +1,17 @@
+"""
+Analyzer for detecting project testing setup.
+
+Identifies test files and testing frameworks.
+
+Author:
+    Amr Elhabbal
+    Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 
 from app.analysis.base import BaseAnalyzer
-from app.analysis.constants import IGNORED_DIRECTORIES
+from app.utils.should_ignore import should_ignore
 
 
 class TestAnalyzer(BaseAnalyzer):
@@ -21,10 +31,7 @@ class TestAnalyzer(BaseAnalyzer):
 
         for path in root.rglob("*"):
 
-            if any(
-                part in IGNORED_DIRECTORIES
-                for part in path.parts
-            ):
+            if should_ignore(path):
                 continue
 
             if not path.is_file():
@@ -32,18 +39,11 @@ class TestAnalyzer(BaseAnalyzer):
 
             file_name = path.name.lower()
 
-            if (
-                file_name.startswith("test_")
-                or file_name.endswith("_test.py")
-            ):
-                test_files.append(
-                    str(path.relative_to(root))
-                )
+            if file_name.startswith("test_") or file_name.endswith("_test.py"):
+                test_files.append(str(path.relative_to(root)))
 
         # Python testing framework detection
-        requirements_files = list(
-            root.rglob("requirements.txt")
-        )
+        requirements_files = list(root.rglob("requirements.txt"))
 
         for requirements in requirements_files:
 

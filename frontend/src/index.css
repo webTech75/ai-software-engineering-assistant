@@ -93,7 +93,8 @@
 
     --chat-user: oklch(0.205 0 0 / 10%);
     --chat-ai: oklch(1 0 0);
-  }
+}
+
 :root[data-theme="dark"] {
 
     color-scheme: dark;
@@ -197,6 +198,7 @@
     --chat-user: rgb(123 156 255 / 12%);
     --chat-ai: #090909;
 }
+
 :root[data-theme="forest"] {
 
     color-scheme: dark;
@@ -248,6 +250,7 @@
     --chat-user: rgb(95 208 138 / 12%);
     --chat-ai: #15261d;
 }
+
 :root[data-theme="ocean"] {
 
     color-scheme: light;
@@ -277,7 +280,7 @@
     --input: #b7d3e4;
     --ring: #0a7bbf;
 
-     --destructive: #d93636;
+    --destructive: #d93636;
     --destructive-foreground: #ffffff;
     --radius: 0.625rem;
 
@@ -302,26 +305,26 @@
 
 @layer base {
 
-  * {
-    @apply border-border outline-ring/50;
-  }
+    * {
+        @apply border-border outline-ring/50;
+    }
 
-  html,
-  body,
-  #root {
-    @apply bg-background text-foreground font-sans;
-    min-height: 100%;
-  }
+    html,
+    body,
+    #root {
+        @apply bg-background text-foreground font-sans;
+        min-height: 100%;
+    }
 
-  body {
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
-  }
+    body {
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
+    }
 
-  a {
-    @apply text-primary;
-  }
+    a {
+        @apply text-primary;
+    }
 }
 
 /* ===========================
@@ -371,20 +374,21 @@
 .chat-loading {
     @apply text-muted-foreground italic;
 }
+
 .markdown {
-  max-width: 100%;
-  overflow-wrap: break-word;
-  word-break: break-word;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .markdown pre {
-  max-width: 100%;
-  overflow-x: auto;
-  white-space: pre;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
 }
 
 .markdown code {
-  overflow-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .markdown {
@@ -447,7 +451,7 @@ input::placeholder {
     color: var(--foreground);
 }
 
-.markdown :is(ol, ul) > li::marker {
+.markdown :is(ol, ul)>li::marker {
     color: var(--muted-foreground);
 }
 
@@ -473,12 +477,12 @@ input::placeholder {
 
 /** AppBackground**/
 .auth-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--background);
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--background);
 }
 
 /* faint grid, fading out toward the edges */
@@ -503,28 +507,46 @@ input::placeholder {
 }
 
 .auth-orb-1 {
-    width: 480px; height: 480px;
-    top: -120px; left: -80px;
+    width: 480px;
+    height: 480px;
+    top: -120px;
+    left: -80px;
     background: var(--primary);
 }
+
 .auth-orb-2 {
-    width: 420px; height: 420px;
-    bottom: -140px; right: -60px;
+    width: 420px;
+    height: 420px;
+    bottom: -140px;
+    right: -60px;
     background: var(--chart-2);
     animation-delay: -7s;
 }
+
 .auth-orb-3 {
-    width: 300px; height: 300px;
-    top: 40%; left: 55%;
+    width: 300px;
+    height: 300px;
+    top: 40%;
+    left: 55%;
     background: var(--chart-4);
     opacity: 0.2;
     animation-delay: -13s;
 }
 
 @keyframes auth-float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33%      { transform: translate(60px, 40px) scale(1.1); }
-    66%      { transform: translate(-40px, 70px) scale(0.95); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(60px, 40px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-40px, 70px) scale(0.95);
+    }
 }
 
 .auth-card {
@@ -536,5 +558,7 @@ input::placeholder {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .auth-orb { animation: none; }
+    .auth-orb {
+        animation: none;
+    }
 }

@@ -4,29 +4,30 @@ File: user_service.py
 Path: app/services/user_service.py
 
 Description:
-    Contains the business logic for user management.
+    Handles user management business logic.
 
 Responsibilities:
-    - Register new users.
-    - Authenticate users.
-    - Retrieve user information.
-    - Coordinate repository operations.
+    - Register and authenticate users.
+    - Manage password reset flow.
+    - Coordinate user and token repositories.
 
 Notes:
-    - Business rules belong in this layer.
-    - Database access is delegated to the repository layer.
-    - Password hashing and verification should be handled through the
-      application's security utilities.
+    - Business rules are handled in this layer.
+    - Database operations are delegated to repositories.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import secrets
 from datetime import datetime, timedelta, timezone
-from app.services.email_service import send_password_reset_email, send_admin_notification_email
+from app.services.email_service import (
+    send_password_reset_email,
+    send_admin_notification_email,
+)
 from app.core.config import settings
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -40,13 +41,11 @@ from app.repositories.password_reset_token_repository import (
 )
 
 
-
 class UserService:
 
     def __init__(self, db: Session):
         self.repository = UserRepository(db)
         self.password_reset_repository = PasswordResetTokenRepository(db)
-
 
     def create_user(self, data: UserCreate) -> User:
 
@@ -55,21 +54,16 @@ class UserService:
 
         if self.repository.get_by_email(email):
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already exists."
+                status_code=status.HTTP_409_CONFLICT, detail="Email already exists."
             )
 
         if self.repository.get_by_username(username):
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Username already exists."
+                status_code=status.HTTP_409_CONFLICT, detail="Username already exists."
             )
 
         if data.registration_code != settings.registration_code:
-            raise HTTPException(
-                status_code=403,
-                detail="Invalid registration code."
-            )
+            raise HTTPException(status_code=403, detail="Invalid registration code.")
 
         password_hash = hash_password(data.password)
 
@@ -80,7 +74,7 @@ class UserService:
         )
 
         created_user = self.repository.create(user)
-        
+
         try:
 
             send_admin_notification_email(
@@ -96,15 +90,13 @@ class UserService:
                 <strong>User ID:</strong> {created_user.id}<br>
                 <strong>Created:</strong> {created_user.created_at}
                 </p>
-                """
+                """,
             )
-            
+
         except Exception as e:
             print("Admin notification failed", e)
 
         return created_user
-
-
 
     def login(self, username: str, password: str) -> TokenResponse:
 
@@ -124,9 +116,7 @@ class UserService:
 
         token = create_access_token(str(user.id))
 
-        return TokenResponse(
-            access_token=token
-        )
+        return TokenResponse(access_token=token)
 
     def forgot_password(self, email: str):
 
@@ -148,10 +138,8 @@ class UserService:
         )
 
         self.password_reset_repository.create(password_reset)
-        
-        reset_link = (
-            f"{settings.frontend_url}/reset-password?token={token}"
-        )
+
+        reset_link = f"{settings.frontend_url}/reset-password?token={token}"
 
         send_password_reset_email(
             user.email,

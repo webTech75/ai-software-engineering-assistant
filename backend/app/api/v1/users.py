@@ -1,25 +1,10 @@
 """
-===============================================================================
-File: users.py
-Path: app/api/v1/users.py
+User authentication API endpoints.
 
-Description:
-    Provides user authentication and account management endpoints.
-
-Responsibilities:
-    - Register new users.
-    - Authenticate existing users.
-    - Return JWT access tokens.
-    - Retrieve authenticated user information.
-
-Notes:
-    - Passwords are never stored in plain text.
-    - JWT authentication secures protected endpoints.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Handles registration, login, password management,
+and authenticated user information retrieval.
 """
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
@@ -31,14 +16,10 @@ from app.schemas.auth import LoginRequest, TokenResponse
 from app.api.dependencies import get_current_user
 from app.models.user import User
 
+router = APIRouter(prefix="/users", tags=["Users"])
 
-router = APIRouter(
-    prefix="/users",
-    tags=["Users"]
-)
 
 @router.post("/register")
-
 def register(
     user: UserCreate,
     db: Session = Depends(get_db),
@@ -52,6 +33,7 @@ def register(
         "username": created_user.username,
         "email": created_user.email,
     }
+
 
 @router.post(
     "/login",
@@ -68,8 +50,8 @@ def login(
         password=form_data.password,
     )
 
-@router.post("/forgot-password")
 
+@router.post("/forgot-password")
 def forgot_password(
     request: ForgotPasswordRequest,
     db: Session = Depends(get_db),
@@ -80,29 +62,21 @@ def forgot_password(
         "message": "If an account exists, a password reset email should be sent shortly."
     }
 
-@router.post("/reset-password")
 
-def reset_password(
-    request: ResetPasswordRequest,
-    db: Session = Depends(get_db)
-):
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     service = UserService(db)
-    try: 
+    try:
         service.reset_password(
             token=request.token,
             password=request.password,
         )
-        return {
-            "message": "Your password has been reset successfully."
-        }
+        return {"message": "Your password has been reset successfully."}
     except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.get("/me")
-
 def get_me(
     current_user: User = Depends(get_current_user),
 ):

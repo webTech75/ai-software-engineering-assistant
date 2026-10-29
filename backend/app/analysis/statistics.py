@@ -1,7 +1,13 @@
+"""
+Analyzer for collecting basic project statistics and file metrics.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 
 from app.analysis.base import BaseAnalyzer
-from app.analysis.constants import IGNORED_DIRECTORIES, IGNORED_EXTENSIONS 
+from app.utils.should_ignore import should_ignore
 
 
 class StatisticsAnalyzer(BaseAnalyzer):
@@ -23,15 +29,9 @@ class StatisticsAnalyzer(BaseAnalyzer):
 
         for path in root.rglob("*"):
 
-            if any(
-                part in IGNORED_DIRECTORIES
-                for part in path.parts
-            ):
+            if should_ignore(path):
                 continue
 
-            if path.is_file() and path.suffix.lower() in IGNORED_EXTENSIONS:
-                continue
-            
             if path.is_dir():
                 total_directories += 1
                 continue
@@ -40,9 +40,7 @@ class StatisticsAnalyzer(BaseAnalyzer):
 
             extension = path.suffix.lower()
 
-            extensions[extension] = (
-                extensions.get(extension, 0) + 1
-            )
+            extensions[extension] = extensions.get(extension, 0) + 1
 
             try:
                 size = path.stat().st_size
@@ -54,15 +52,9 @@ class StatisticsAnalyzer(BaseAnalyzer):
 
             if size > largest_size:
                 largest_size = size
-                largest_file = str(
-                    path.relative_to(root)
-                )
+                largest_file = str(path.relative_to(root))
 
-        average_size = (
-            total_size / total_files
-            if total_files
-            else 0
-        )
+        average_size = total_size / total_files if total_files else 0
 
         return {
             "statistics": {

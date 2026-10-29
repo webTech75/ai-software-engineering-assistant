@@ -1,10 +1,12 @@
 """
-Stores chat messages.
+Database model for storing chat messages.
 
 Supports:
+    - General Neura conversations.
+    - Project-specific conversations.
 
-    - General Neura conversations
-    - Project-specific conversations
+Author:
+    Amr Elhabbal
 """
 
 from datetime import datetime
@@ -27,20 +29,15 @@ from sqlalchemy.orm import (
 from app.db.database import Base
 
 
-
 class ChatMessage(Base):
 
     __tablename__ = "chat_messages"
-
-
 
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         index=True,
     )
-
-
 
     project_id: Mapped[int | None] = mapped_column(
         ForeignKey(
@@ -51,29 +48,21 @@ class ChatMessage(Base):
         index=True,
     )
 
-
-
     role: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
     )
-
-
 
     content: Mapped[str] = mapped_column(
         Text,
         nullable=False,
     )
 
-
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False,
     )
-
-
 
     project = relationship(
         "Project",

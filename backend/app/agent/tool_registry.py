@@ -1,24 +1,7 @@
 """
-===============================================================================
-File:
-    app/agent/tool_registry.py
+Central registry managing available AI tools and their schemas.
 
-Description:
-    Registers tools available to the AI assistant.
-
-Responsibilities:
-    - Create tool instances.
-    - Retrieve tools by name.
-    - Provide tool schemas.
-
-Does NOT:
-    - Execute tools.
-    - Perform reasoning.
-    - Create execution plans.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.file_system.file_manager import FileManager
@@ -31,6 +14,7 @@ from app.agent.tools.search_text import SearchTextTool
 from app.agent.tools.write_file import WriteFileTool
 from app.agent.tools.edit_file import EditFileTool
 from app.agent.tools.delete_file import DeleteFileTool
+from app.agent.tools.analyze_project import AnalyzeProjectTool
 
 
 class ToolRegistry:
@@ -56,40 +40,33 @@ class ToolRegistry:
         without modifying the registry.
         """
 
-        file_manager = (
-            file_manager
-            or FileManager()
-        )
-
+        file_manager = file_manager or FileManager()
 
         tools: list[BaseTool] = (
             custom_tools
             if custom_tools is not None
             else [
+                # File management tools
                 ListFilesTool(file_manager),
                 ReadFileTool(file_manager),
                 SearchTextTool(file_manager),
                 WriteFileTool(file_manager),
                 EditFileTool(file_manager),
                 DeleteFileTool(file_manager),
+                # Project analysis tool
+                AnalyzeProjectTool(),
             ]
         )
 
-
         self._tools: dict[str, BaseTool] = {}
-
 
         for tool in tools:
 
             if tool.name in self._tools:
 
-                raise ValueError(
-                    f"Duplicate tool registered: {tool.name}"
-                )
+                raise ValueError(f"Duplicate tool registered: {tool.name}")
 
             self._tools[tool.name] = tool
-
-
 
     def get(
         self,
@@ -105,8 +82,6 @@ class ToolRegistry:
 
         return self._tools.get(name)
 
-
-
     def get_schemas(
         self,
     ) -> list[dict]:
@@ -117,12 +92,7 @@ class ToolRegistry:
         function calling.
         """
 
-        return [
-            tool.schema
-            for tool in self._tools.values()
-        ]
-
-
+        return [tool.schema for tool in self._tools.values()]
 
     @property
     def tools(

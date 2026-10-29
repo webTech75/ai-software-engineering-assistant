@@ -2,10 +2,11 @@ import { Upload } from 'lucide-react'
 
 import { uploadProjectRequest } from '@/api/requests'
 import { useAuth } from '../auth/AuthContext'
+import type { UploadResponse } from '@/types/chat'
 
 interface ProjectUploadProps {
   projectId: number
-  onSuccess: () => void
+  onSuccess: (response: UploadResponse) => void
 }
 
 export default function ProjectUpload ({
@@ -24,8 +25,9 @@ export default function ProjectUpload ({
 
     try {
       showLoader('Uploading in progress...')
-      await uploadProjectRequest(projectId, file)
-      onSuccess()
+      const response = await uploadProjectRequest(projectId, file)
+
+      onSuccess(response)
       showToast('Project uploaded successfully.', 'success')
     } catch (error: any) {
       console.log('Upload failed:', error)

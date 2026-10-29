@@ -1,67 +1,7 @@
 """
-===============================================================================
-File: base.py
-Path: app/agent/tools/base.py
+Abstract base class defining the interface for all AI tools.
 
-Description:
-    Defines the abstract base class for every AI tool.
-
-Responsibilities:
-    - Define the interface every tool must implement.
-    - Ensure consistency across all tools.
-    - Provide tool metadata for the LLM.
-    - Standardize tool execution.
-
-Architecture:
-
-                BaseTool
-                   ▲
-        ┌──────────┼──────────┐
-        ▼          ▼          ▼
-   ReadFile   WriteFile   DeleteFile
-        ▲          ▲          ▲
-        └──────────┼──────────┘
-                   ▼
-             Tool Registry
-                   ▼
-                 Agent
-
-Every tool must provide:
-
-    • name
-        Unique tool identifier.
-
-    • description
-        Natural language description shown to the LLM.
-
-    • schema
-        JSON schema defining tool parameters.
-
-    • execute()
-        Business logic executed by the application.
-
-Execution Flow:
-
-        Agent
-          |
-          v
-   Tool Registry
-          |
-          v
-     BaseTool API
-          |
-          v
-   Specific Tool
-          |
-          v
-   Project Filesystem
-
-Dependencies:
-    - abc
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from abc import ABC, abstractmethod
@@ -79,7 +19,6 @@ class BaseTool(ABC):
         execute()
     """
 
-
     @property
     @abstractmethod
     def name(self) -> str:
@@ -93,8 +32,6 @@ class BaseTool(ABC):
 
         pass
 
-
-
     @property
     @abstractmethod
     def description(self) -> str:
@@ -103,8 +40,6 @@ class BaseTool(ABC):
         """
 
         pass
-
-
 
     @property
     @abstractmethod
@@ -116,8 +51,6 @@ class BaseTool(ABC):
         """
 
         pass
-
-
 
     @abstractmethod
     def execute(

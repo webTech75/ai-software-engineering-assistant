@@ -1,25 +1,9 @@
 """
-===============================================================================
-File: delete_file.py
-Path: app/agent/tools/delete_file.py
+AI tool for safely deleting project files through FileManager.
 
-Description:
-    Deletes a file from the current project.
+Status: Under Construction
 
-Responsibilities:
-    - Expose delete_file capability to the AI agent.
-    - Pass deletion requests to FileManager.
-    - Return deletion results.
-
-Does NOT:
-    - Access filesystem directly.
-    - Validate paths directly.
-    - Manage project objects.
-    - Execute AI reasoning.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -39,11 +23,9 @@ class DeleteFileTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "delete_file"
-
 
     @property
     def description(self) -> str:
@@ -52,7 +34,6 @@ class DeleteFileTool(BaseTool):
             "Use only when the user explicitly requests "
             "file deletion."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -66,10 +47,7 @@ class DeleteFileTool(BaseTool):
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": (
-                                "Relative path of the file "
-                                "to delete."
-                            ),
+                            "description": ("Relative path of the file " "to delete."),
                         },
                     },
                     "required": [
@@ -79,7 +57,6 @@ class DeleteFileTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,

@@ -1,3 +1,21 @@
+"""
+===============================================================================
+File:
+    app/repositories/password_reset_token_repository.py
+
+Description:
+    Repository layer for managing password reset tokens.
+
+Responsibilities:
+    - Create password reset tokens.
+    - Retrieve tokens for validation.
+    - Update token state.
+
+Author:
+    Amr Elhabbal
+===============================================================================
+"""
+
 from sqlalchemy.orm import Session
 
 from app.models.password_reset_token import PasswordResetToken

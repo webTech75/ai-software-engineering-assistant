@@ -1,11 +1,16 @@
+"""
+Analyzer for extracting project file structure information.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from pathlib import Path
 
 from app.analysis.base import BaseAnalyzer
-from app.analysis.constants import IGNORED_DIRECTORIES, IGNORED_EXTENSIONS
+from app.utils.should_ignore import should_ignore
 
 
 class StructureAnalyzer(BaseAnalyzer):
-    
 
     def analyze(self, project_directory: str) -> dict:
 
@@ -16,15 +21,8 @@ class StructureAnalyzer(BaseAnalyzer):
         for path in root.rglob("*"):
 
             # Skip ignored directories and their contents
-            if any(part in IGNORED_DIRECTORIES for part in path.parts):
+            if should_ignore(path):
                 continue
-
-            if (
-                path.is_file()
-                and path.suffix.lower() in IGNORED_EXTENSIONS
-            ):
-                continue
-
 
             if path.is_file():
                 files.append(str(path.relative_to(root)))

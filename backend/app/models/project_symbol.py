@@ -1,16 +1,15 @@
 """
 ===============================================================================
-File: project_symbol.py
-Path: app/models/project_symbol.py
+File:
+    app/models/project_symbol.py
 
 Description:
-    Stores extracted code symbols for AI code intelligence.
+    Defines the database model for storing extracted code symbols.
 
 Responsibilities:
-    - Store classes.
-    - Store functions.
-    - Store imports and other code symbols.
+    - Store classes, functions, and code symbols.
     - Link symbols to project files.
+    - Support AI code intelligence features.
 
 Author:
     Amr Elhabbal
@@ -38,13 +37,11 @@ class ProjectSymbol(Base):
 
     __tablename__ = "project_symbols"
 
-
     id = Column(
         Integer,
         primary_key=True,
         index=True,
     )
-
 
     project_file_id = Column(
         Integer,
@@ -52,31 +49,24 @@ class ProjectSymbol(Base):
         nullable=False,
     )
 
-
     name = Column(
         String(255),
         nullable=False,
     )
-
 
     type = Column(
         String(50),
         nullable=False,
     )
 
-
     line_number = Column(
         Integer,
         nullable=True,
     )
-
 
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
     )
 
-    project_file = relationship(
-        "ProjectFile",
-        back_populates="symbols"
-    )
+    project_file = relationship("ProjectFile", back_populates="symbols")

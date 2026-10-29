@@ -1,3 +1,9 @@
+"""
+Abstract base class defining the interface for project analyzers.
+
+Author: Amr Elhabbal | Powered by Meta AI Muse
+"""
+
 from abc import ABC, abstractmethod
 
 

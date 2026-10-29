@@ -1,55 +1,64 @@
 """
-===============================================================================
-File: file_policy.py
-Path: app/file_system/file_policy.py
+Project file access policies.
 
-Description:
-    Defines rules for accessing project files.
-
-Responsibilities:
-    - Control which files can be analyzed.
-    - Ignore unnecessary directories.
-    - Prevent processing unsafe files.
-    - Enforce file size limits.
-
-Does NOT:
-    - Read files.
-    - Search files.
-    - Access the database.
+Defines rules for allowed files, ignored paths,
+and safety limits for project processing.
 
 Author:
     Amr Elhabbal
 ===============================================================================
 """
 
-
 from pathlib import Path
 
+# ============================================================
+# Directories ignored during analysis
+# ============================================================
 
-# Directories that should not be analyzed
 IGNORED_DIRECTORIES = {
     ".git",
     ".venv",
     "venv",
+    "env",
     "node_modules",
     "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".idea",
+    ".vscode",
     "dist",
     "build",
+    ".next",
+    ".cache",
+    ".neura",
 }
 
 
-# File types that should never be processed
+# ============================================================
+# Files that should never be processed
+# ============================================================
+
 IGNORED_EXTENSIONS = {
     ".pyc",
+    ".pyo",
     ".exe",
     ".dll",
     ".so",
+    ".dylib",
     ".db",
     ".sqlite",
+    ".sqlite3",
 }
 
+IGNORED_FILES = {
+    ".env",
+    ".env.example",
+}
 
-# File extensions we support for code analysis
+# ============================================================
+# Files supported for analysis
+# ============================================================
+
 ALLOWED_EXTENSIONS = {
     ".py",
     ".js",
@@ -71,23 +80,48 @@ ALLOWED_EXTENSIONS = {
 }
 
 
-# Maximum file size allowed for reading
+# ============================================================
+# File read limits
+# ============================================================
+
+# Maximum individual file size Neura can read
 MAX_FILE_SIZE = 500_000  # 500 KB
 
 
+# ============================================================
+# Upload limits
+# ============================================================
 
-def is_ignored_directory(directory: Path) -> bool:
+# Maximum uploaded ZIP file size
+MAX_UPLOAD_SIZE = 1 * 1024 * 1024 * 1024  # 1 GB
+
+# Maximum extracted project size
+MAX_EXTRACTED_SIZE = 1 * 1024 * 1024 * 1024  # 1 GB
+
+# Maximum number of files allowed inside ZIP
+MAX_FILES_IN_ZIP = 5000
+
+
+# ============================================================
+# Rules
+# ============================================================
+
+
+def is_ignored_directory(
+    directory: Path,
+) -> bool:
     """
-    Check whether a directory should be skipped.
+    Check whether directory should be skipped.
     """
 
     return directory.name in IGNORED_DIRECTORIES
 
 
-
-def is_allowed_file(file_path: Path) -> bool:
+def is_allowed_file(
+    file_path: Path,
+) -> bool:
     """
-    Check whether a file type can be processed.
+    Check whether file can be analyzed.
     """
 
     extension = file_path.suffix.lower()
@@ -95,16 +129,40 @@ def is_allowed_file(file_path: Path) -> bool:
     if extension in IGNORED_EXTENSIONS:
         return False
 
-    if extension not in ALLOWED_EXTENSIONS:
-        return False
-
-    return True
+    return extension in ALLOWED_EXTENSIONS
 
 
-
-def is_file_size_allowed(file_path: Path) -> bool:
+def is_file_size_allowed(
+    file_path: Path,
+) -> bool:
     """
-    Check whether the file size is within the limit.
+    Check individual file size.
     """
 
     return file_path.stat().st_size <= MAX_FILE_SIZE
+
+
+def is_zip_size_allowed(
+    file_size: int,
+) -> bool:
+    """
+    Check uploaded ZIP size.
+    """
+
+    return file_size <= MAX_UPLOAD_SIZE
+
+
+def should_ignore_path(path: Path) -> bool:
+    """
+    Determine whether a path should be ignored.
+    """
+
+    for part in path.parts:
+
+        if part in IGNORED_DIRECTORIES:
+            return True
+
+    if path.name in IGNORED_FILES:
+        return True
+
+    return False

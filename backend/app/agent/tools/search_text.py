@@ -1,26 +1,7 @@
 """
-===============================================================================
-File:
-    app/agent/tools/search_text.py
+AI tool for searching project files and contents through FileManager.
 
-Description:
-    Searches project files.
-
-Responsibilities:
-    - Expose project search capability to the AI agent.
-    - Search filenames through FileManager.
-    - Search file contents through FileManager.
-    - Return matching results.
-
-Does NOT:
-    - Access filesystem directly.
-    - Manage project context.
-    - Perform AI reasoning.
-    - Validate filesystem security.
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 from app.agent.tools.base import BaseTool
@@ -41,11 +22,9 @@ class SearchTextTool(BaseTool):
     ):
         self.file_manager = file_manager
 
-
     @property
     def name(self) -> str:
         return "search_text"
-
 
     @property
     def description(self) -> str:
@@ -54,7 +33,6 @@ class SearchTextTool(BaseTool):
             "Use 'file' to find filenames or paths. "
             "Use 'content' to search inside files."
         )
-
 
     @property
     def schema(self) -> dict:
@@ -69,8 +47,7 @@ class SearchTextTool(BaseTool):
                         "query": {
                             "type": "string",
                             "description": (
-                                "Filename, path, or text "
-                                "to search for."
+                                "Filename, path, or text " "to search for."
                             ),
                         },
                         "search_type": {
@@ -80,8 +57,7 @@ class SearchTextTool(BaseTool):
                                 "content",
                             ],
                             "description": (
-                                "file = locate files. "
-                                "content = search inside files."
+                                "file = locate files. " "content = search inside files."
                             ),
                         },
                     },
@@ -93,7 +69,6 @@ class SearchTextTool(BaseTool):
                 },
             },
         }
-
 
     def execute(
         self,
@@ -108,11 +83,10 @@ class SearchTextTool(BaseTool):
 
         if search_type == "file":
 
-            return self.file_manager.find_files(
+            return self.file_manager.search_text(
                 project_directory=project_directory,
                 query=query,
             )
-
 
         if search_type == "content":
 
@@ -121,8 +95,4 @@ class SearchTextTool(BaseTool):
                 query=query,
             )
 
-
-        raise ValueError(
-            "Invalid search_type. "
-            "Use 'file' or 'content'."
-        )
+        raise ValueError("Invalid search_type. " "Use 'file' or 'content'.")

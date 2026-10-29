@@ -1,64 +1,13 @@
 """
-===============================================================================
-File:
-    app/agent/agent.py
+Core AI agent orchestrator managing tools, context, and LLM responses.
 
-Description:
-    Main AI agent orchestrator.
-
-Responsibilities:
-    - Route user requests.
-    - Create execution plans.
-    - Execute project tools when required.
-    - Build LLM context.
-    - Generate final responses.
-
-Does NOT:
-    - Access files directly.
-    - Execute tools directly.
-    - Manage database sessions.
-    - Decide individual tool workflows.
-
-Architecture:
-
-    User Message
-          |
-          v
-       Router
-          |
-    +-----+------+
-    |            |
- General      Project
-    |            |
-    |         Planner
-    |            |
-    |         Executor
-    |            |
-    +-----+------+
-          |
-          v
-         LLM
-          |
-          v
-      Response
-
-Author:
-    Amr Elhabbal
-===============================================================================
+Author: Amr Elhabbal | Powered by Meta AI Muse
 """
 
 import logging
 
-from app.core.config import settings
-
-from app.agent.router import (
-    AgentRouter,
-    RequestType,
-)
-
-from app.agent.planner import Planner
-from app.agent.executor import Executor
-
+from app.agent.tool_registry import ToolRegistry
+from app.analysis.storage import AnalysisStorage
 
 logger = logging.getLogger(__name__)
 
@@ -69,39 +18,25 @@ class Agent:
 
     Coordinates:
 
-        Router
-        Planner
-        Executor
+        Tool Registry
         LLM
 
-    The Agent does not decide
-    individual tool workflows.
+    The Agent does not perform
+    individual tool operations.
+
+    It only:
+        - selects required tools
+        - provides tool results to the LLM
+        - returns the final response
     """
 
-    def __init__(
-        self,
-        llm,
-        planner: Planner | None = None,
-        executor: Executor | None = None,
-    ):
+    def __init__(self, llm):
         """
         Initialize agent.
         """
 
-        self.router = AgentRouter()
-
-        self.planner = (
-            planner
-            or Planner()
-        )
-
-        self.executor = (
-            executor
-            or Executor()
-        )
-
         self.llm = llm
-
+        self.tool_registry = ToolRegistry()
 
     def run(
         self,
@@ -109,200 +44,345 @@ class Agent:
         project_directory: str | None = None,
         history: list[dict] | None = None,
     ) -> str:
-        """
-        Execute user request.
+        NEURA_WELCOME_MESSAGE = """
+            👋 Hi, I'm Neura, your AI Software Engineering Assistant, 
+            powered by Meta AI's Muse Spark 1.3 model.
 
-        Flow:
-
-            Message
-              |
-            Router
-              |
-            Planner
-              |
-            Executor
-              |
-             LLM
-        """
-
+            I can help you understand your codebase, debug issues, 
+            review architecture, explain concepts, and improve your software projects.
+            """
         # ---------------------------------------------------------
-        # Route request
+        # Execute required tools
         # ---------------------------------------------------------
-
-        request_type = self.router.route(
-            message
-        )
-
-
-        logger.info(
-            "Request route: %s",
-            request_type,
-        )
-
-
-        # ---------------------------------------------------------
-        # Default values
-        # ---------------------------------------------------------
-
         tool_results = {}
 
-        task_type = request_type.value
+        project_context = None
 
+        if project_directory:
+            stored_analysis = AnalysisStorage.load(project_directory)
+            project_context = stored_analysis.get("context")
 
+        # Listing project files
+        if project_directory and self.should_list_files(message):
 
-        # ---------------------------------------------------------
-        # Create plan and execute tools
-        # ---------------------------------------------------------
+            logger.info("Listing project files")
 
-        if (
-            project_directory
-            and request_type != RequestType.GENERAL
-        ):
+            list_tool = self.tool_registry.get("list_files")
 
-            plan = self.planner.create_plan(
-                message
-            )
+            if list_tool:
 
+                tool_results = list_tool.execute(
+                    project_directory=project_directory,
+                )
+        # search route
+        elif project_directory and self.should_search_text(message):
+
+            logger.info("Searching project files")
+
+            search_tool = self.tool_registry.get("search_text")
+
+            if search_tool:
+
+                tool_results = search_tool.execute(
+                    project_directory=project_directory,
+                    query=self.extract_search_query(message),
+                )
+
+        #  read file
+        elif project_directory and self.should_read_file(message):
+
+            logger.info("Reading project file")
+
+            file_name = self.extract_file_name(message)
 
             logger.info(
-                "Execution plan: %s",
-                plan,
+                "Requested file: %s",
+                file_name,
             )
 
+            read_tool = self.tool_registry.get("read_file")
 
-            task_type = plan.get(
-                "task_type",
-                task_type,
+            if read_tool:
+
+                tool_results = read_tool.execute(
+                    project_directory=project_directory,
+                    path=file_name,
+                )
+
+                from pprint import pformat
+
+                logger.info(
+                    "File content:\n%s",
+                    pformat(tool_results, width=120),
+                )
+
+        elif project_directory and self.should_search_project(message):
+
+            logger.info("Running project search tool")
+
+            search_tool = self.tool_registry.get("search_text")
+
+            if search_tool:
+
+                tool_results = search_tool.execute(
+                    project_directory=project_directory,
+                    query=self.extract_search_query(message),
+                )
+
+        #  analyze project
+        elif project_directory and self.should_analyze_project(message):
+
+            logger.info("Running project analysis tool")
+
+            analyze_tool = self.tool_registry.get("analyze_project")
+
+            tool_results = analyze_tool.execute(
+                project_directory=project_directory,
             )
 
+            from pprint import pformat
 
-            tool_results = self.executor.execute(
-                plan,
-                project_directory,
+            logger.info(
+                "Tool results:\n%s",
+                pformat(tool_results, width=120),
             )
-
-
 
         # ---------------------------------------------------------
         # Build conversation history
         # ---------------------------------------------------------
 
-        conversation = (
-            self.build_conversation_context(
-                history
-            )
-        )
-
-
+        conversation = self.build_conversation_context(history)
 
         # ---------------------------------------------------------
-        # Token selection
+        # Generate LLM response
         # ---------------------------------------------------------
 
-        max_tokens = self.get_max_tokens(
-            task_type
-        )
+        llm_answer = self.llm.generate(prompt=f"""
+            Conversation:
+
+            {conversation}
 
 
+            User request:
 
-        # ---------------------------------------------------------
-        # Ask LLM
-        # ---------------------------------------------------------
-
-        llm_answer = self.llm.generate(
-            prompt=f"""
-Conversation:
-
-{conversation}
+            {message}
 
 
-User request:
+            Project information:
 
-{message}
+            Project uploaded: {bool(project_directory)}
 
+            Project context:
 
-Project tool results:
+            {project_context}
 
-{tool_results}
-""",
-            max_tokens=max_tokens,
-        )
+            Tool results:
 
-
+            {tool_results}
+            """)
 
         if not llm_answer or not llm_answer.strip():
 
-            llm_answer = (
-                "I was unable to generate a response. "
-                "Please try again."
-            )
+            llm_answer = "I was unable to generate a response. " "Please try again."
 
-
-        logger.info(
-            "LLM response generated"
-        )
-
+        logger.info("LLM response generated")
 
         return llm_answer
 
+    def should_analyze_project(
+        self,
+        message: str,
+    ) -> bool:
+        """
+        Determine whether project analysis
+        is required.
 
+        Temporary lightweight routing.
+
+        Future:
+            Replace with LLM based
+            tool selection.
+        """
+
+        keywords = [
+            "review",
+            "analyze",
+            "analysis",
+            "scan",
+            "project",
+            "code review",
+            "architecture",
+            "bugs",
+            "security",
+        ]
+
+        message = message.lower()
+
+        return any(keyword in message for keyword in keywords)
 
     def build_conversation_context(
         self,
         history: list[dict] | None,
     ) -> str:
         """
-        Build conversation context for LLM.
+        Build conversation context.
 
-        Limits history size to prevent
+        Limits history size to reduce
         unnecessary token usage.
         """
 
         if not history:
-
-            return ""
-
+            return NEURA_WELCOME_MESSAGE
 
         conversation = ""
 
-
         for item in history[-6:]:
-
-            conversation += (
-                f"{item['role']}: "
-                f"{item['content'][:500]}\n"
-            )
-
+            conversation += f"{item['role']}: " f"{item['content'][:500]}\n"
 
         return conversation
 
-
-
-    def get_max_tokens(
+    def should_read_file(
         self,
-        task_type: str,
-    ) -> int:
+        message: str,
+    ) -> bool:
         """
-        Select token limit based on task.
+        Determine whether the user is requesting
+        inspection of a specific file.
         """
 
-        if task_type == "explain":
+        message = message.lower()
 
-            return (
-                settings.llm_explain_max_tokens
-            )
+        file_reference = ".py" in message or ".tsx" in message or ".ts" in message
 
+        action_request = any(
+            keyword in message
+            for keyword in [
+                "read",
+                "open",
+                "show",
+                "explain",
+                "review",
+                "inspect",
+                "analyze",
+                "check",
+            ]
+        )
 
-        if task_type in [
-            "review",
-            "bug_analysis",
-            "security_review",
-            "quality_review",
-        ]:
+        return file_reference and action_request
 
-            return (
-                settings.llm_review_max_tokens
-            )
+    def extract_file_name(self, message: str) -> str:
+        """
+        Extract file path from user message.
 
+        Example:
+        "Review app/services/user_service.py"
 
-        return settings.llm_max_tokens
+        returns:
+        "app/services/user_service.py"
+        """
+
+        words = message.split()
+
+        for word in words:
+            if "/" in word and "." in word:
+                return word.strip("`'\"")
+
+        return ""
+
+    def should_list_files(
+        self,
+        message: str,
+    ) -> bool:
+        """
+        Determine whether the user wants
+        to inspect project files.
+        """
+
+        keywords = [
+            "list files",
+            "show files",
+            "file list",
+            "folder",
+            "directory",
+            "structure",
+            "tree",
+        ]
+
+        message = message.lower()
+
+        return any(keyword in message for keyword in keywords)
+
+    def should_search_text(
+        self,
+        message: str,
+    ) -> bool:
+        """
+        Determine whether user wants
+        to search project contents.
+        """
+
+        keywords = [
+            "find",
+            "search",
+            "where is",
+            "contains",
+            "usage of",
+            "references",
+        ]
+
+        message = message.lower()
+
+        return any(keyword in message for keyword in keywords)
+
+    def extract_search_query(
+        self,
+        message: str,
+    ) -> str:
+
+        ignored = {
+            "search",
+            "for",
+            "find",
+            "where",
+            "locate",
+        }
+
+        words = message.split()
+
+        return " ".join(word for word in words if word.lower() not in ignored)
+
+    def should_search_project(
+        self,
+        message: str,
+    ) -> bool:
+
+        keywords = [
+            "search",
+            "find",
+            "where",
+            "locate",
+        ]
+
+        message = message.lower()
+
+        return any(keyword in message for keyword in keywords)
+
+    def get_project_welcome(
+        self,
+        project_name: str,
+        context: str | None = None,
+    ) -> dict:
+
+        return {"message": f"""
+            👋 Hi, I'm Neura, your AI Software Engineering Assistant, 
+            powered by Meta AI's Muse Spark 1.3 model to analyze, 
+            understand, and assist with your software projects.
+
+            Here's what I can help you with:
+            
+            I analyzed your project: {project_name}
+
+            {context}
+
+            You can ask me anything about your codebase.
+        """}

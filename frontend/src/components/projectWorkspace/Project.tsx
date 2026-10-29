@@ -15,6 +15,9 @@ import type { Project } from '@/types/project'
 import type { ChatMessage } from '@/types/chat'
 import { ProjectSidebar } from '@/components/projectWorkspace/ProjectSidebar'
 import { ProjectAnalysis } from './ProjectAnalysis'
+import type { UploadResponse } from '@/types/chat'
+
+
 
 export function Project () {
   const { projectId } = useParams<{ projectId: string }>()
@@ -123,6 +126,20 @@ export function Project () {
     }
   }
 
+  function handleProjectUpload(response: UploadResponse) {
+    console.log("UPLOAD RESPONSE:", response)
+    if (response.welcome) {
+
+      setMessages(current => [
+        ...current,
+        {
+          role: 'assistant',
+          content: response.welcome.message
+        }
+      ])
+
+    }
+  }
   return (
     <div className='w-full space-y-8 px-6 py-6 lg:px-8'>
       {loadingProject ? (
@@ -130,9 +147,12 @@ export function Project () {
       ) : project ? (
         <>
           <ProjectHeader project={project} />
-          <ProjectAnalysis projectId={id} />
+          <ProjectAnalysis 
+            projectId={id} 
+            hasProjectFiles={Boolean(project.project_directory)}
+          />
           <div className='mt-6 flex w-full min-w-0 rounded-xl border'>
-            <ProjectSidebar projectId={id} />
+            <ProjectSidebar projectId={id} onUploadSuccess={handleProjectUpload} />
 
             <div className='min-w-0 flex-1 p-6'>
               <NeuraChat
