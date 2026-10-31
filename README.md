@@ -53,9 +53,9 @@ Health Check:
 ```text
 https://neura-g8wk.onrender.com/health
 ```
-<p align="center">
+<!-- <p align="center">
 <img src="docs/assets/neura_icon.png" width="800">
-</p>
+</p> -->
 
 
 ▶️ Demo Video:
