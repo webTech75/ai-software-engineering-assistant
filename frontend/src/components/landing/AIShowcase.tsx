@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { RobotMascot } from '@/components/common/RobotMascot'
 
 const steps = [
   'Scanning repository',
@@ -9,16 +8,9 @@ const steps = [
   'Generating recommendations'
 ]
 
-export function AIShowcase () {
+export function AIShowcase() {
   return (
-    <div className='relative mx-auto mt-0 w-full max-w-3xl'>
-      <div className='flex flex-col items-center'>
-        <RobotMascot mood='loading' />
-
-        <p className='mt-0 text-center text-xs font-medium text-primary'>
-          AI ENGINE ACTIVE
-        </p>
-      </div>
+    <div className='relative mx-auto mt-8 w-full max-w-3xl'>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

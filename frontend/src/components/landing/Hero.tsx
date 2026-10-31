@@ -1,10 +1,47 @@
 import { motion } from 'framer-motion'
 import { AIShowcase } from './AIShowcase'
+import { RobotMascot } from '@/components/common/RobotMascot'
 
-export function Hero () {
+export function Hero() {
   return (
-    <section className='relative flex min-h-screen items-center justify-center overflow-hidden px-6'>
-      {/* Background glow */}
+    <section className='relative flex min-h-screen items-center justify-center overflow-visible px-6'>
+      <motion.div
+        animate={{
+          y: ['0vh', '75vh', '0vh'],
+        }}
+        transition={{
+          duration: 600,
+          repeat: Infinity,
+          ease: 'linear',
+        }}
+        className="
+    fixed
+    left-10
+    top-20
+    z-20
+    hidden
+    flex-col
+    items-center
+    md:flex
+  "
+      >
+        <RobotMascot mood="loading" />
+
+        <div className="
+    mt-2
+    rounded-full
+    border
+    border-primary/20
+    bg-primary/10
+    px-3
+    py-1
+    backdrop-blur-md
+  ">
+          <p className="text-xs font-medium text-primary">
+            AI ENGINE ACTIVE
+          </p>
+        </div>
+      </motion.div>
       <div className='absolute inset-0 -z-10'>
         <div className='absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-[120px]' />
       </div>
@@ -14,7 +51,7 @@ export function Hero () {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className='mb-2 flex justify-center'
+          className='mb-5 flex justify-center'
         >
           <img
             src='/neura_icon.png'
@@ -30,17 +67,17 @@ export function Hero () {
         >
           Neura
           <br />
-          Your AI Software Engineering Assistant
+          Your AI Software Engineering <br />Agent
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className='mx-auto mt-2 max-w-2xl text-lg text-muted-foreground md:text-xl'
+          className='mx-auto mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl'
         >
           Analyze your codebase, understand software architecture, detect
-          issues, and improve your projects with intelligent AI assistance.
+          issues, and improve your projects with intelligent AI agent.
         </motion.p>
 
         <motion.div
