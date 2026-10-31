@@ -29,7 +29,7 @@ def send_password_reset_email(
 
     email = sib_api_v3_sdk.SendSmtpEmail(
         sender={
-            "name": "AI Software Engineering Assistant",
+            "name": "Neura AI SWEA",
             "email": settings.email_from,
         },
         to=[
@@ -37,11 +37,11 @@ def send_password_reset_email(
                 "email": recipient_email,
             }
         ],
-        subject="Reset your password",
+        subject="Reset your Neura AI password",
         html_content=f"""
-            <p>Hello,</p>
+            <p>Hello, this is Neura </p>
 
-            <p>You requested a password reset for your AI Software Engineering Assistant account.</p>
+            <p>You requested a password reset for your Neura account.</p>
 
             <p>
             Click the link below to reset your password:
