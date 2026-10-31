@@ -39,6 +39,13 @@ def send_password_reset_email(
         ],
         subject="Reset your Neura AI password",
         html_content=f"""
+             <div style="text-align:center;">
+                <img 
+                    src="https://neura-client.onrender.com/neura_icon.png"
+                    alt="Neura Logo"
+                    width="100"
+                />
+            </div>
             <p>Hello, this is Neura </p>
 
             <p>You requested a password reset for your Neura account.</p>
