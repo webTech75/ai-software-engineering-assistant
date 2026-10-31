@@ -39,30 +39,40 @@ def send_password_reset_email(
         ],
         subject="Reset your password",
         html_content=f"""
-                    <p>Hello,</p>
+            <p>Hello,</p>
 
-                    <p>You requested a password reset for your AI Software Engineering Assistant account.</p>
+            <p>You requested a password reset for your AI Software Engineering Assistant account.</p>
 
-                    <p>
-                    Click the link below to reset your password:
-                    </p>
+            <p>
+            Click the link below to reset your password:
+            </p>
 
-                    <p>
-                    <a href="{reset_link}">
-                        Reset Password
-                    </a>
-                    </p>
+            <p>
+            <a href="{reset_link}">
+                Reset Password
+            </a>
+            </p>
 
-                    <p>
-                    If you received this email by mistake or did not request a password reset, 
-                    please ignore this message. No action is required.
-                    </p>
+            <p>
+            If you received this email by mistake or did not request a password reset,
+            please ignore this message. No action is required.
+            </p>
 
-                    <p>
-                    AI Software Engineering Assistant
-                    </p>
-                    """,
+            <p>
+            AI Software Engineering Assistant
+            </p>
+        """,
     )
+
+    try:
+        response = api_instance.send_transac_email(email)
+        print("Password reset email sent successfully.")
+        print(response)
+
+    except Exception as e:
+        print("Password reset email failed:")
+        print(e)
+        raise
 
 
 def send_admin_notification_email(
