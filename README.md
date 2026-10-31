@@ -108,3 +108,22 @@ Neura provides an AI software engineering agent that can:
 Unlike traditional coding assistants, Neura combines repository analysis, engineering tools, and AI reasoning to provide project-level assistance.
 
 Developers interact with Neura naturally:
+
+## Screenshots
+
+## Login & Authentication
+Secure user authentication to access Neura projects.
+![Neura Landing](docs/screenshots/landing.png)
+
+## Project Dashboard
+Create and manage software projects with Neura.
+![Project Creation Dashboard](docs/screenshots/dashboard_create.png)
+![Projects List Dashboard](docs/screenshots/dashboard_projects.png)
+
+## Project Analysis
+Analyze code quality, security, bugs, and technology stack.
+![Analysis](docs/screenshots/analysis.png)
+
+## AI Agent Chat
+Interact with Neura using natural language and project context.
+![AI Chat](docs/screenshots/chat.png)
