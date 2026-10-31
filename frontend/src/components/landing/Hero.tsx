@@ -1,8 +1,29 @@
 import { motion } from 'framer-motion'
 import { AIShowcase } from './AIShowcase'
 import { RobotMascot } from '@/components/common/RobotMascot'
+import { useEffect, useState } from "react";
+import type { RobotMood } from "@/components/common/RobotMascot";
 
 export function Hero() {
+  const [robotMood, setRobotMood] = useState<RobotMood>("loading");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRobotMood("scanning");
+
+      setTimeout(() => {
+        setRobotMood("fixing");
+
+        setTimeout(() => {
+          setRobotMood("idle");
+        }, 3000);
+
+      }, 2500);
+
+    }, 45000);
+
+    return () => clearInterval(timer);
+  }, []);
   return (
     <section className='relative flex min-h-screen items-center justify-center overflow-visible px-6'>
       <motion.div
@@ -15,28 +36,28 @@ export function Hero() {
           ease: 'linear',
         }}
         className="
-    fixed
-    left-10
-    top-20
-    z-20
-    hidden
-    flex-col
-    items-center
-    md:flex
-  "
+          fixed
+          left-10
+          top-20
+          z-20
+          hidden
+          flex-col
+          items-center
+          md:flex
+        "
       >
-        <RobotMascot mood="loading" />
+        <RobotMascot mood={robotMood} />
 
         <div className="
-    mt-2
-    rounded-full
-    border
-    border-primary/20
-    bg-primary/10
-    px-3
-    py-1
-    backdrop-blur-md
-  ">
+          mt-2
+          rounded-full
+          border
+          border-primary/20
+          bg-primary/10
+          px-3
+          py-1
+          backdrop-blur-md
+        ">
           <p className="text-xs font-medium text-primary">
             AI ENGINE ACTIVE
           </p>
