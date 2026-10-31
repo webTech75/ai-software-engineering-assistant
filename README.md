@@ -1,5 +1,5 @@
 # 🤖 Neura
-## AI Software Engineering Assistant
+## AI Software Engineering Agent
 
 <p align="center">
   <img src="docs/assets/neura_icon.png" width="120" alt="Neura Logo">
@@ -10,7 +10,7 @@ Your AI Engineering Partner That Understands Your Codebase
 </h3>
 
 <p align="center">
-Built with <b>Meta Muse AI</b> for the Meta AI Developer Hackathon 2026
+Hackathon version powered by **Meta Muse Spark AI** for the Meta AI Developer Hackathon 2026
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@ Built with <b>Meta Muse AI</b> for the Meta AI Developer Hackathon 2026
 
 # 🚀 Overview
 
-Neura is an AI-powered software engineering assistant that helps developers understand, analyze, and interact with software projects using natural language.
+Neura is an AI-powered software engineering agent that helps developers understand, analyze, and interact with software projects using natural language.
 
 Powered by **Meta Muse AI**, Neura combines a large language model with a secure AI Agent architecture that allows developers to communicate with their codebase.
 
@@ -41,19 +41,32 @@ Neura transforms AI from a chatbot into a **project-aware engineering partner**.
 
 # 🎥 Demo
 
+## 🚀 Deployment
+
+Neura has an existing production deployment foundation. The hackathon version extends this foundation by integrating Meta models as the AI reasoning layer.
+
+Neura is deployed on Render. The backend service may require a short startup time after inactivity due to the free-tier sleep behavior.
+
+Before using the application, you can verify that the backend is ready:
+
+Health Check:
+```text
+https://neura-g8wk.onrender.com/health
+```
 <p align="center">
-<img src="docs/assets/neura-demo.gif" width="800">
+<img src="docs/assets/neura_icon.png" width="800">
 </p>
 
 
 ▶️ Demo Video:
 
-(Add YouTube Link)
+
+[![Neura Demo](https://img.youtube.com/vi/CfpEslKEttk/maxresdefault.jpg)](https://www.youtube.com/watch?v=CfpEslKEttk)
 
 
 🌐 Live Application:
 
-(Add Deployment URL)
+https://neura-client.onrender.com/
 
 
 
@@ -72,14 +85,14 @@ Software developers spend significant time:
 - Performing repetitive development tasks
 
 
-Traditional AI assistants often require manually copying code snippets and lack full project context.
+Traditional AI agent often require manually copying code snippets and lack full project context.
 
 
 ---
 
 # 🧠 Solution
 
-Neura provides an AI software engineering assistant that can:
+Neura provides an AI software engineering agent that can:
 
 ✨ Understand uploaded projects  
 ✨ Analyze source code structure  
@@ -92,5 +105,6 @@ Neura provides an AI software engineering assistant that can:
 ✨ Delete files  
 ✨ Answer engineering questions  
 
+Unlike traditional coding assistants, Neura combines repository analysis, engineering tools, and AI reasoning to provide project-level assistance.
 
 Developers interact with Neura naturally:
