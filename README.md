@@ -60,8 +60,7 @@ https://neura-g8wk.onrender.com/health
 
 ▶️ Demo Video:
 
-
-[![Neura Demo](https://img.youtube.com/vi/CfpEslKEttk/maxresdefault.jpg)](https://www.youtube.com/watch?v=CfpEslKEttk)
+[![Neura Demo](https://img.youtube.com/vi/kV16cjZw4ok/maxresdefault.jpg)](https://www.youtube.com/watch?v=kV16cjZw4ok)
 
 
 🌐 Live Application:
